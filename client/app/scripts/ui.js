@@ -130,5 +130,26 @@ angular.module('submissionUI', []).
 
       element.fadeOut(fadeout_delay);
     };
+}).
+  directive('mockFileUpload', function($rootScope){
+  return {
+    // scope: {
+    //   'uploadInProgress': '=',
+    //   'uploadingFiles': '='
+    // },
+
+    scope: false,
+    link: function(scope, elm, attrs) {
+      elm.bind('change', function(evt) {
+        scope.$root[attrs.uploadInProgress] = true;
+        scope.$root[attrs.uploadingFiles] = true;
+        scope.$root.$apply();
+
+        // console.log(scope.uploadInProgress);
+        // scope.uploadInProgress = true;
+        // scope.uploadingFiles.push(evt.target.files[0]);
+      });
+    }
+  };
 });
 

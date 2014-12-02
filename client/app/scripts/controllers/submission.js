@@ -207,6 +207,9 @@ controller('SubmissionFormControllerMock', ['$scope', '$rootScope', function ($s
    
     ]
   ];
+  $scope.selected_file = undefined;
+  $scope.upload_in_progress = false;
+  $scope.uploading_files = [];
 
 }]).
 controller('HideExpandController', ['$scope', '$rootScope', function($scope, $rootScope) {

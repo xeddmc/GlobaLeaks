@@ -1,6 +1,6 @@
 <fieldset>
   <div data-ng-repeat="field in steps[$index]">
-    <div data-ng-controller="SubmissionFieldCtrl" data-ng-form="" name="subForm" class="submissionField">
+    <div data-ng-form="" name="subForm" class="submissionField">
       <div data-ng-switch="" on="field.type">
         <div data-ng-switch-default="" class="form-group input" data-ng-class="field.required && 'required'">
           <div>
@@ -31,6 +31,11 @@
               </div>
 
               <div data-ng-switch-when="fileupload">
+                <input type="file" mock-file-upload 
+                       upload-in-progress="upload_in_progress"
+                       uploading-files="uploading_files"/>
+                       <pre>{{upload_in_progress}}</pre>
+                       <pre>{{uploading_files | json}}</pre>
               </div>
             </div>
 

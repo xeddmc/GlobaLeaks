@@ -36,12 +36,12 @@ This comment is needed in order to push the following strings on transifex
     {{submission.current_context.description}}
   </div>
 
-  <div class="row">
+  <div class="row" data-ng-controller="SubmissionFormControllerMock">
 
     <div class="col-md-6">
       <div data-ng-repeat="step in submission.current_context.steps">
         <div class="row">
-          <span class="stepIndex">Step {{$index + 1}} -</span>
+          <span class="stepIndex">Step {{$index + 1}}</span>
           <span class="stepLabel">{{step.label}}</span>
           <!-- <li data-ng-repeat="step in submission.current_context.steps" data-ng-class="{active: selection==$index + 1, disabled: uploading}"> -->
           <p class="stepDescription">
@@ -49,18 +49,24 @@ This comment is needed in order to push the following strings on transifex
           </p>
         </div>
         <div class="row">
-          <div class="col-md-12" data-ng-form="submissionForm" 
-            data-ng-controller="SubmissionFormControllerMock">
+          <div class="col-md-12" data-ng-form="submissionForm">
             <div data-ng-include="'views/submission/form_new.html'"></div>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="sideActionBar">
+      
+      <div>
         <div class="row">
-          <div class="col-md-9">
+          <span class="stepIndex">Step 3</span>
+          <span class="stepLabel">Accept the terms and conditions</span>
+          <p class="stepDescription"></p>
+        </div>
+
+        <div class="row">
+          <div class="col-md-1">
+            <input type="checkbox">
+          </div>
+          <div class="col-md-11">
             <p class="preformatted">To ensure your anonymity be sure that you are visiting this site using the Tor Browser Bundle.
 You acknowledge that failure to do so will result in the inability to technically protect your anonymity.
 To further enhance your security, please follow these instructions:
@@ -69,12 +75,20 @@ To further enhance your security, please follow these instructions:
 By checking the box below you agree to these terms and conditions.
             </p>
           </div>
-          <div class="col-md-3">
-            <button class="btn btn-default actionButton">Send</button>
-          </div>
         </div>
-        <div data-ng-include="'views/partials/fileupload_new.html'">
+      </div>
+
+      <div class="row">
+        <div class="col-md-3">
+          <button class="btn btn-default actionButton">Send</button>
         </div>
+      </div>
+
+
+    </div>
+
+    <div class="col-md-6">
+      <div data-ng-include="'views/partials/fileupload_new.html'">
       </div>
     </div>
   </div>
