@@ -1,0 +1,56 @@
+<div data-ng-controller="FileUploadControllerMock" data-ng-show="uploading">
+  <div class="row">
+    <h2>Uploading files...</h2>
+    <hr>
+  </div>
+  <div class="row">
+    <form id="fileupload" action="" method="POST" enctype="multipart/form-data"
+      data-ng-app="GLClient.fileuploader"
+      data-file-upload="options" data-ng-class="{'fileupload-processing':
+      processing() || loadingFiles}">
+
+      <div data-ng-repeat="file in uploading_files">
+
+        <div class="fileUploadBox" data-ng-controller="FileUploadEditFileController">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="filePreview">
+                <img src="http://placehold.it/150x150"/>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="fileDetails">
+                <div class="fileName">
+                  <span>{{file.name}}</span>
+                </div>
+                <div class="fileDetailsEntry">
+                  <textarea class="form-control" placeholder="title"></textarea>
+                </div>
+                <div class="fileDetailsEntry">
+                  <textarea class="form-control" placeholder="description"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <button class="btn btn-default actionButton">delete</button>
+            </div>
+          </div>
+        </div>
+        <hr/>
+
+      </div>
+
+      <!-- <div class="fileUploadAddContainer col-md-2"> -->
+      <!--   <div class="fileUploadAdd"> -->
+      <!--     <div class="row"> -->
+      <!--       <div class="fileUploadAddButton"> -->
+      <!--         <button class="btn btn-default actionButton">Add file</button> -->
+      <!--       </div> -->
+      <!--     </div> -->
+      <!--   </div> -->
+      <!-- </div> -->
+    </form>
+  </div>
+</div>

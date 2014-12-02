@@ -188,4 +188,28 @@ controller('SubmissionStepsCtrl', ['$scope', function($scope) {
     }
   };
 
+}]).
+controller('SubmissionFormControllerMock', ['$scope', '$rootScope', function ($scope, $rootScope) {
+  $scope.steps = [
+    [
+      {
+        "label": "File upload",
+        "hint": "Hint are",
+        "type": "fileupload"
+      }
+    ],
+    [
+      {
+        "label": "Text Area",
+        "hint": "Hint are",
+        "type": "textarea"
+      },
+   
+    ]
+  ];
+
+}]).
+controller('HideExpandController', ['$scope', '$rootScope', function($scope, $rootScope) {
+  $scope.expanded = false;
 }]);
+

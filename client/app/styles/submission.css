@@ -58,3 +58,70 @@
 #MaxSelectableReceiverBox {
   margin-bottom: 30px;
 }
+
+.fileUploadBox {
+}
+
+.filePreview {
+  margin: 0 auto;
+  width: 150px;
+  padding: 0px 10px 10px 10px;
+}
+
+.fileDetailsEntry {
+  padding-bottom: 10px;
+}
+
+.fileUploadAddContainer {
+  padding-left: 10px;
+}
+
+.fileUploadAdd {
+  height: 290px;
+  border: 1px dotted blue;
+}
+
+.fileUploadAddButton {
+  margin: 0 auto;
+  width: 73px;
+  padding-top: 190px;
+}
+
+.fileName {
+  padding-bottom: 10px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.sideActionBar {
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 2px 1px 5px #888888;
+  padding: 30px;
+}
+
+.stepIndex {
+  display: block;
+  font-size: 36px;
+  font-weight: 500;
+}
+
+.stepLabel {
+  display: block;
+  font-size: 20px;
+  font-weight: 500;
+  color: grey;
+}
+
+.submitButtonContainer {
+  position: absolute;
+  right: 0;
+}
+
+.submitButtonBar {
+  height: 50px;
+  position: fixed;
+  background-color: red;
+  width: 100%;
+  bottom: 0;
+}
