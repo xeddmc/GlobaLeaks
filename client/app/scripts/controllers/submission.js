@@ -1,6 +1,6 @@
 GLClient.controller('SubmissionCtrl',
-    ['$scope', '$rootScope', '$location', 'Authentication', 'Node', 'Submission', 'Receivers', 'WhistleblowerTip',
-      function ($scope, $rootScope, $location, Authentication, Node, Submission, Receivers, WhistleblowerTip) {
+    ['$scope', '$rootScope', '$location', '$modal', 'Authentication', 'Node', 'Submission', 'Receivers', 'WhistleblowerTip',
+      function ($scope, $rootScope, $location, $modal, Authentication, Node, Submission, Receivers, WhistleblowerTip) {
   
   $scope.fake_submission = {
     completed: false,
@@ -9,6 +9,7 @@ GLClient.controller('SubmissionCtrl',
   $scope.fake_submit = function() {
     $scope.fake_submission.completed = true; 
   }
+
   $rootScope.invalidForm = true;
 
   $scope.receiptConfimation = "";
@@ -121,6 +122,40 @@ GLClient.controller('SubmissionCtrl',
       }
     }
   });
+
+  var open_steps_intro = function () {
+    var modalInstance = $modal.open({
+      templateUrl: 'views/partials/steps_intro.html',
+      controller: 'StepsIntroCtrl',
+      size: 'lg',
+      scope: $scope
+    });
+
+  };
+
+  open_steps_intro();
+}]).
+controller('StepsIntroCtrl', ['$scope', '$rootScope', '$modalInstance', function ($scope, $rootScope, $modalInstance) {
+
+  steps = 3;
+
+  $scope.proceed = function () {
+    if ($scope.step < steps) {
+      $scope.step += 1;
+    }
+  }
+
+  $scope.back = function () {
+    if ($scope.step > 0) {
+      $scope.step -= 1;
+    }
+  }
+
+  $scope.cancel = function () {
+    $modalInstance.close();
+  };
+
+  $scope.step = 0;
 }]).
 controller('SubmissionFieldCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
   $scope.queue = [];

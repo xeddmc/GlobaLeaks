@@ -140,13 +140,13 @@ var GLClient = angular.module('GLClient', [
         header_subtitle: ''
       }).
       when('/', {
-        templateUrl: 'views/home.html',
-        controller: 'HomeCtrl',
+        templateUrl: 'views/submission/main_new.html',
+        controller: 'SubmissionCtrl',
         header_title: '',
         header_subtitle: ''
       }).
       otherwise({
-        redirectTo: '/'
+        redirectTo: '/submission'
       });
 
       $translateProvider.useStaticFilesLoader({
