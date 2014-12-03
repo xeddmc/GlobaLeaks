@@ -25,8 +25,13 @@ var GLClient = angular.module('GLClient', [
         header_subtitle: 'Step-by-step setup'
       }).
       when('/submission', {
+        templateUrl: 'views/submission/main.html',
+        controller: 'SubmissionCtrl',
+        header_title: 'Blow the Whistle',
+        header_subtitle: ''
+      }).
+      when('/submission_new', {
         templateUrl: 'views/submission/main_new.html',
-        //templateUrl: 'views/submission/main.html',
         controller: 'SubmissionCtrl',
         header_title: 'Blow the Whistle',
         header_subtitle: ''
@@ -146,7 +151,7 @@ var GLClient = angular.module('GLClient', [
         header_subtitle: ''
       }).
       otherwise({
-        redirectTo: '/submission'
+        redirectTo: '/submission_new'
       });
 
       $translateProvider.useStaticFilesLoader({
