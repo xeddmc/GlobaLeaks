@@ -24,7 +24,7 @@ var GLClient = angular.module('GLClient', [
         header_title: 'GlobaLeaks Wizard',
         header_subtitle: 'Step-by-step setup'
       }).
-      when('/submission_new', {
+      when('/submission', {
         //templateUrl: 'views/submission/main.html',
         templateUrl: 'views/submission/main_new.html',
         controller: 'SubmissionCtrl',
@@ -146,7 +146,7 @@ var GLClient = angular.module('GLClient', [
         header_subtitle: ''
       }).
       otherwise({
-        redirectTo: '/submission_new'
+        redirectTo: '/submission'
       });
 
       $translateProvider.useStaticFilesLoader({
