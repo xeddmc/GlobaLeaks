@@ -24,13 +24,8 @@ var GLClient = angular.module('GLClient', [
         header_title: 'GlobaLeaks Wizard',
         header_subtitle: 'Step-by-step setup'
       }).
-      when('/submission', {
-        templateUrl: 'views/submission/main.html',
-        controller: 'SubmissionCtrl',
-        header_title: 'Blow the Whistle',
-        header_subtitle: ''
-      }).
       when('/submission_new', {
+        //templateUrl: 'views/submission/main.html',
         templateUrl: 'views/submission/main_new.html',
         controller: 'SubmissionCtrl',
         header_title: 'Blow the Whistle',
