@@ -129,3 +129,8 @@
 .fileUploadProgress {
   padding-top: 10px;
 }
+
+.submissionButton {
+  font-size: 25px;
+  padding: 10px 100px 10px;
+}
