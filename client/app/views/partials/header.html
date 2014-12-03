@@ -14,7 +14,7 @@
       <!-- <a href="/#/"><img data-ng-src="{{ logo }}" class="img-rounded"></a> -->
     </div>
 
-    <div class="receiptBox pull-right">
+    <div class="receiptBox pull-right" data-ng-controller="HomeCtrl">
       <div class="row">
         <p>
         Already shared info? Use your reference below
@@ -22,8 +22,8 @@
       </div>
       <div class="row">
         <form class="form-inline" role="form">
-          <input type="text" class="form-control" placeholder="16 Digit Reference Number"/>
-          <button class="btn btn-default actionButton">Find</button>
+          <input type="text" class="form-control" data-ng-model="receipt" placeholder="16 Digit Reference Number"/>
+          <button class="btn btn-default actionButton" data-ng-click="view_tip(receipt)">Find</button>
         </form>
       </div>
     </div>
