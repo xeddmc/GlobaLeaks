@@ -4,7 +4,7 @@ GLClient.controller('SubmissionCtrl',
   
   $scope.fake_submission = {
     completed: false,
-    receipt: 'XXXX-XXXX-XXXX-XXXX'
+    receipt: '2597152664046100'
   }
   $scope.fake_submit = function() {
     $scope.fake_submission.completed = true; 
