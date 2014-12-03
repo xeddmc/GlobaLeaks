@@ -1,0 +1,84 @@
+<div data-ng-switch="" on="step">
+  <div data-ng-switch-when="0">
+    <div class="modal-header">
+      <button type="button" class="close" aria-hidden="true" data-ng-click="cancel()">
+        <i class="glyphicon glyphicon glyphicon-remove-circle"></i>
+      </button>
+      <h2 data-translate>Setup 1/3</h2>
+    </div>
+    <div class="modal-body">
+      <h2><b>Select Language</b></h2><br />
+      Please select which language you wish to use.<br /><br />
+      <div class="row">
+        <div action="" class="languagePreselector">
+          <span class="languagePreselectorOpt col-md-offset-3 col-md-2">
+            <input type="radio" name="linguaggio" value="en"><br />
+            English
+          </span>
+          <span class="languagePreselectorOpt col-md-2">
+            <input type="radio" name="linguaggio" value="ar" /><br />
+            Arabic<br />
+            العَرَبِيةُ
+          </span>
+          <span class="languagePreselectorOpt col-md-2">
+            <input type="radio" name="linguaggio" value="ur" /><br />
+              Urdu<br />
+            اُردُو
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="pull-right">
+        <button class="btn btn-default actionButton" data-ng-click="proceed()">
+          <span data-translate>Proceed</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div data-ng-switch-when="1">
+    <div class="modal-header">
+      <button type="button" class="close" aria-hidden="true" data-ng-click="cancel()">
+        <i class="glyphicon glyphicon glyphicon-remove-circle"></i>
+      </button>
+      <h2 data-translate>Setup 2/3</h2>
+    </div>
+    <div class="modal-body">
+      <h2><b>Be Secure</b></h2><br />
+      While using Tor browser will protect your anonymity, it is not foolproof.<br /><br />
+      Remember to always follow <a href="">recommended security advice</a>.
+    </div>
+    <div class="modal-footer">
+      <div class="pull-left">
+        <a data-ng-click="back()">Back</a>
+      </div>
+      <div class="pull-right">
+        <button class="btn btn-default actionButton" data-ng-click="proceed()">
+          <span data-translate>Proceed</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div data-ng-switch-when="2">
+    <div class="modal-header">
+      <button type="button" class="close" aria-hidden="true" data-ng-click="cancel()">
+        <i class="glyphicon glyphicon glyphicon-remove-circle"></i>
+      </button>
+      <h2 data-translate>Setup 3/3</h2>
+    </div>
+    <div class="modal-body">
+      <h2><b>Sharing Information</b></h2><br />
+      In order for the information you provide to be acted on, please be as specific as possible i.e. add location, names and dates where possible. 
+    </div>
+    <div class="modal-footer">
+      <div class="pull-left">
+        <a data-ng-click="back()">Back</a>
+      </div>
+      <div class="pull-right">
+        <button class="btn btn-default actionButton" data-ng-click="cancel()">
+          <span data-translate>Proceed</span>
+        </button>
+      </div>
+    </div>
+  </div
+</div>
