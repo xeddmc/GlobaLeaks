@@ -31,11 +31,7 @@
               </div>
 
               <div data-ng-switch-when="fileupload">
-                <input type="file" mock-file-upload 
-                       upload-in-progress="upload_in_progress"
-                       uploading-files="uploading_files"/>
-                       <pre>{{upload_in_progress}}</pre>
-                       <pre>{{uploading_files | json}}</pre>
+                <button class="btn btn-default actionButton" data-ng-click="upload_file()">+ Add file</button>
               </div>
             </div>
 

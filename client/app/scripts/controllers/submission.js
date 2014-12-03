@@ -211,6 +211,21 @@ controller('SubmissionFormControllerMock', ['$scope', '$rootScope', function ($s
   $scope.upload_in_progress = false;
   $scope.uploading_files = [];
 
+  $scope.upload_file = function() {
+    $scope.upload_in_progress = true;
+    var name = "file_";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        name += possible.charAt(Math.floor(Math.random() * possible.length));
+    $scope.uploading_files.push({
+      "name": name,
+      "size": Math.floor(Math.random() * 1000),
+      "type": "image"
+    });
+  };
+
+
 }]).
 controller('HideExpandController', ['$scope', '$rootScope', function($scope, $rootScope) {
   $scope.expanded = false;

@@ -23,26 +23,31 @@ This comment is needed in order to push the following strings on transifex
 
 <div data-ng-controller="SubmissionStepsCtrl" id="ContentBox" class="container submission" data-ng-show="node.name && node.configured">
 
-  <div id="ContextPickSelector" data-ng-show="submission.contexts.length > 1">
-    <div id="SubmissionStep1Title" class="lead">
-      <span data-translate>Choose the context and receivers that will be sure to transform your submission into action!</span>
-    </div>
-    <span class="lead" data-ng-show="node.configured">
-      <span data-translate>I want to report on</span>
-    </span>
-    <select class="form-control contexts" data-ng-model="submission.current_context" data-ng-options="context as context.name for context in submission.contexts | orderBy:'presentation_order'"></select>
-  </div>
-  <div id="ContextIntroductionBox">
-    {{submission.current_context.description}}
-  </div>
-
   <div class="row" data-ng-controller="SubmissionFormControllerMock">
 
     <div class="col-md-6">
+      <div class="row">
+        <div id="ContextIntroductionBox">
+          {{submission.current_context.description}}
+        </div>
+      </div>
+
+      <div id="ContextPickSelector" class="row">
+        <div id="SubmissionStep1Title" class="lead">
+          <span data-translate>Choose the context and receivers that will be sure to transform your submission into action!</span>
+        </div>
+        <span class="lead" data-ng-show="node.configured">
+          <span data-translate>I want this information to go to</span>
+        </span>
+        <select class="form-control contexts" data-ng-model="submission.current_context" data-ng-options="context as context.name for context in submission.contexts | orderBy:'presentation_order'"></select>
+      </div>
+
+
+
       <div data-ng-repeat="step in submission.current_context.steps">
         <div class="row">
-          <span class="stepIndex">Step {{$index + 1}}</span>
-          <span class="stepLabel">{{step.label}}</span>
+          <span class="stepIndex">{{$index + 1}} {{step.label}}</span>
+          <!-- span class="stepLabel"></span -->
           <!-- <li data-ng-repeat="step in submission.current_context.steps" data-ng-class="{active: selection==$index + 1, disabled: uploading}"> -->
           <p class="stepDescription">
             {{step.description}}
@@ -53,12 +58,15 @@ This comment is needed in order to push the following strings on transifex
             <div data-ng-include="'views/submission/form_new.html'"></div>
           </div>
         </div>
+        <div class="row">
+          <hr>
+        </div>
       </div>
       
       <div>
         <div class="row">
-          <span class="stepIndex">Step 3</span>
-          <span class="stepLabel">Accept the terms and conditions</span>
+          <span class="stepIndex">3 Share Information</span>
+          <!-- span class="stepLabel">Accept the terms and conditions</span-->
           <p class="stepDescription"></p>
         </div>
 
