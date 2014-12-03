@@ -18,4 +18,16 @@ controller('WBFileUploadCtrlMultiple', ['$scope', 'Authentication', function($sc
   };
 }]).
 controller('FileUploadEditFileController', ['$scope', 'Authentication', function($scope, Authentication) {
+  $scope.empty_d = true;
+  $scope.empty_t = true;
+  $scope.file_desc;
+  $scope.file_title;
+  $scope.edit = function() {
+    if ($scope.file_desc) {
+      $scope.empty_d = false; 
+    }
+    if ($scope.file_title) {
+      $scope.empty_t = false; 
+    }
+  }
 }]);

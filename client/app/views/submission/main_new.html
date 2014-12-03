@@ -46,9 +46,17 @@ This comment is needed in order to push the following strings on transifex
 
       <div data-ng-repeat="step in submission.current_context.steps">
         <div class="row">
-          <span class="stepIndex">{{$index + 1}} {{step.label}}</span>
+          <span class="stepIndex">{{$index + 1}} {{step.label}}
+          <a data-ng-show="step.hint" class="stepHint"
+                   data-content="step.hint"
+                   popover="{{step.hint}}"
+                   popover-placement="right" popover-trigger="mouseenter">
+            <i class="glyphicon glyphicon-question-sign"></i>
+          </a>
+          </span>
           <!-- span class="stepLabel"></span -->
           <!-- <li data-ng-repeat="step in submission.current_context.steps" data-ng-class="{active: selection==$index + 1, disabled: uploading}"> -->
+
           <p class="stepDescription">
             {{step.description}}
           </p>
@@ -88,7 +96,7 @@ By checking the box below you agree to these terms and conditions.
 
       <div class="row">
         <div class="col-md-3">
-          <button class="btn btn-default actionButton">Send</button>
+          <button class="btn btn-default actionButton submissionButton" data-ng-click="fake_submit()">Send</button>
         </div>
       </div>
 
@@ -111,7 +119,7 @@ By checking the box below you agree to these terms and conditions.
 <!-- </div> -->
 
 <!-- This will be visualized once the subission is created -->
-<div class="submission-receipt modal" data-ng-show="submission.completed">
+<div class="submission-receipt modal" data-ng-show="fake_submission.completed">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -134,7 +142,7 @@ By checking the box below you agree to these terms and conditions.
         <span data-translate>If you are interested in keeping it, please save it in a secure place and make sure it does not fall into the wrong hands</span> 
         </p>
 
-        <h2>{{submission.receipt}}</h2>
+        <h2>{{fake_submission.receipt}}</h2>
 
         <p>
         <span data-translate>Please copy in the box below your receipt to access the tip interface.</span> 
@@ -143,7 +151,7 @@ By checking the box below you agree to these terms and conditions.
 
       </div>
       <div class="modal-footer">
-        <a data-ng-click="view_tip(submission.receipt)" data-ng-disabled="submission.receipt != receiptConfirmation" class="btn btn-success">
+        <a data-ng-click="view_tip(fake_submission.receipt)" data-ng-disabled="fake_submission.receipt != receiptConfirmation" class="btn btn-success">
           <i class="glyphicon glyphicon-log-in"></i>
           <span data-translate>View Tip</span>
         </a>

@@ -1,6 +1,14 @@
 GLClient.controller('SubmissionCtrl',
     ['$scope', '$rootScope', '$location', '$modal', 'Authentication', 'Node', 'Submission', 'Receivers', 'WhistleblowerTip',
       function ($scope, $rootScope, $location, $modal, Authentication, Node, Submission, Receivers, WhistleblowerTip) {
+  
+  $scope.fake_submission = {
+    completed: false,
+    receipt: 'XXXX-XXXX-XXXX-XXXX'
+  }
+  $scope.fake_submit = function() {
+    $scope.fake_submission.completed = true; 
+  }
 
   $rootScope.invalidForm = true;
 

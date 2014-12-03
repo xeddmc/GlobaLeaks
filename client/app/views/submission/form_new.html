@@ -3,15 +3,15 @@
     <div data-ng-form="" name="subForm" class="submissionField">
       <div data-ng-switch="" on="field.type">
         <div data-ng-switch-default="" class="form-group input" data-ng-class="field.required && 'required'">
-          <div>
-            <label>{{field.label}}</label>
-            <a href="" data-ng-show="field.hint"
-                       data-content="field.hint"
-                       popover="{{field.hint}}"
-                       popover-placement="right" popover-trigger="mouseenter">
-              <i class="glyphicon glyphicon-question-sign"></i>
-            </a>
-          </div> 
+          <!-- <div> -->
+          <!--   <label>{{field.label}}</label> -->
+          <!--   <a href="" data-ng-show="field.hint" -->
+          <!--              data-content="field.hint" -->
+          <!--              popover="{{field.hint}}" -->
+          <!--              popover-placement="right" popover-trigger="mouseenter"> -->
+          <!--     <i class="glyphicon glyphicon-question-sign"></i> -->
+          <!--   </a> -->
+          <!-- </div>  -->
           <div class="submissionFieldInput row">
 
             <div data-ng-switch="" on="field.type">
@@ -31,7 +31,7 @@
               </div>
 
               <div data-ng-switch-when="fileupload">
-                <button class="btn btn-default actionButton" data-ng-click="upload_file()">+ Add file</button>
+                <button class="btn btn-default actionButton submissionButton" data-ng-click="upload_file()">+ Add file</button>
               </div>
             </div>
 

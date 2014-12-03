@@ -10,12 +10,41 @@ body {
   width: 100%;
 }
 
+.receiptBox {
+  padding-right: 50px;
+}
+
+.receiptBox .form-control {
+  width: 290px;
+}
+
+.languageSelect {
+  padding-right: 50px;
+}
+
+#LogoBox {
+  padding-left: 30px;
+  padding-bottom: 30px;
+}
+
+#LogoBox h2 {
+  font-size: 25px;
+  line-height: 15px; 
+  color: #FFFF00;
+}
+
+#LogoBox h3 {
+  font-size: 20px;
+  line-height: 10px; 
+  color: #FFFF00;
+}
+
 #HeaderBox {
   overflow: hidden;
-  padding: 40px 0;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
-  background: Teal;
+  /* padding: 40px 0; */
+  color: white;
+  /* text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075); */
+  background: black;
 }
 
 #HeaderBox:after, #HeaderBox:after {
@@ -88,7 +117,7 @@ h3 {
   font-size: 20px;
 }
 
-#LogoBox, #TitleBox {
+#TitleBox {
   padding: 30px;
 }
 
