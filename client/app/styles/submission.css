@@ -127,7 +127,19 @@
 }
 
 .fileUploadProgress {
-  padding-top: 10px;
+  padding-top: 115px;
+  position: absolute;
+  top: 0;
+  z-index: 989999999;
+  height: 150px;
+  width: 150px;
+  background-color: black;
+  opacity: 0.3;
+}
+
+.fileUploadProgress .progress {
+  width: 130px;
+  margin-left: 10px;
 }
 
 .submissionButton {
