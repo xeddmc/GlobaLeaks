@@ -1,0 +1,154 @@
+<!-- 
+
+This comment is needed in order to push the following strings on transifex
+
+<span data-translate>Blow the Whistle</span>
+<span data-translate>This receiver has configured the encryption key.</span>
+<span data-translate>This receiver has not configured the encryption key.</span>
+<span data-translate>Select this receiver.</span>
+<span data-translate>Unselect this receiver.</span>
+<span data-translate>Details</span>
+
+-->
+<div class="ng-cloak container" data-ng-show="!node.configured && node.name">
+  <h2 data-translate>This node is not configured.</h2>
+  <p>
+  <span data-translate>You will not be able to send a submission.</span><br />
+  <span data-translate>Admin please configure at least one Context and associated Receivers using</span>
+  <a href="/#/admin/contexts">
+    <span data-translate>Admin management interface</span>
+  </a>.
+  </p>
+</div>
+
+<div data-ng-controller="SubmissionStepsCtrl" id="ContentBox" class="container submission" data-ng-show="node.name && node.configured">
+
+  <div class="row" data-ng-controller="SubmissionFormControllerMock">
+
+    <div class="col-md-6">
+      <div class="row">
+        <div id="ContextIntroductionBox">
+          {{submission.current_context.description}}
+        </div>
+      </div>
+
+      <div id="ContextPickSelector" class="row">
+        <div id="SubmissionStep1Title" class="lead">
+          <span data-translate>Choose the context and receivers that will be sure to transform your submission into action!</span>
+        </div>
+        <span class="lead" data-ng-show="node.configured">
+          <span data-translate>I want this information to go to</span>
+        </span>
+        <select class="form-control contexts" data-ng-model="submission.current_context" data-ng-options="context as context.name for context in submission.contexts | orderBy:'presentation_order'"></select>
+      </div>
+
+
+
+      <div data-ng-repeat="step in submission.current_context.steps">
+        <div class="row">
+          <span class="stepIndex">{{$index + 1}} {{step.label}}</span>
+          <!-- span class="stepLabel"></span -->
+          <!-- <li data-ng-repeat="step in submission.current_context.steps" data-ng-class="{active: selection==$index + 1, disabled: uploading}"> -->
+          <p class="stepDescription">
+            {{step.description}}
+          </p>
+        </div>
+        <div class="row">
+          <div class="col-md-12" data-ng-form="submissionForm">
+            <div data-ng-include="'views/submission/form_new.html'"></div>
+          </div>
+        </div>
+        <div class="row">
+          <hr>
+        </div>
+      </div>
+      
+      <div>
+        <div class="row">
+          <span class="stepIndex">3 Share Information</span>
+          <!-- span class="stepLabel">Accept the terms and conditions</span-->
+          <p class="stepDescription"></p>
+        </div>
+
+        <div class="row">
+          <div class="col-md-1">
+            <input type="checkbox">
+          </div>
+          <div class="col-md-11">
+            <p class="preformatted">To ensure your anonymity be sure that you are visiting this site using the Tor Browser Bundle.
+You acknowledge that failure to do so will result in the inability to technically protect your anonymity.
+To further enhance your security, please follow these instructions:
+1) In the event that you would like to remain anonymous, do not submit any personal information. (e.g. your name or relationship to the offender. Do not submit any information that can be traced back to you.)
+2) Please do not submit your report on a PC provided by your employer. Particularly an intranet connection may jeopardize your anonymity.
+By checking the box below you agree to these terms and conditions.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-3">
+          <button class="btn btn-default actionButton">Send</button>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div class="col-md-6">
+      <div data-ng-include="'views/partials/fileupload_new.html'">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <div class="submitButtonBar"> -->
+<!--   <div class="container submitButtonContainerSS"> -->
+<!--     <div class="submitButtonContainer"> -->
+<!--       <button class="btn btn-default actionButton">submit</button> -->
+<!--     </div> -->
+<!--   </div> -->
+<!-- </div> -->
+
+<!-- This will be visualized once the subission is created -->
+<div class="submission-receipt modal" data-ng-show="submission.completed">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 data-translate>Submission Created!</h2>
+      </div>
+      <div class="modal-body">
+
+        <p>
+        <span data-translate>This receipt will allow you to login as the whistleblower for this Tip.</span>
+        <span data-translate>Through this system receivers will be able to ask you questions on the Tip and you will be able to write a reply.</span> 
+        <span data-translate>You will also be able to keep track of who has viewed your submission and downloaded the files.</span>
+        <span data-translate>Moreover, it will allow you to add other files to your submission.</span> 
+        </p>
+
+        <p>
+        <span data-translate>Beware of the fact that this receipt, if fallen into the wrong hands, will lead to identifying you as the whistleblower for this Tip.</span>
+        </p>
+
+        <p>
+        <span data-translate>If you are interested in keeping it, please save it in a secure place and make sure it does not fall into the wrong hands</span> 
+        </p>
+
+        <h2>{{submission.receipt}}</h2>
+
+        <p>
+        <span data-translate>Please copy in the box below your receipt to access the tip interface.</span> 
+        </p>
+        <input class="form-control" data-ng-model="receiptConfirmation" type="text">
+
+      </div>
+      <div class="modal-footer">
+        <a data-ng-click="view_tip(submission.receipt)" data-ng-disabled="submission.receipt != receiptConfirmation" class="btn btn-success">
+          <i class="glyphicon glyphicon-log-in"></i>
+          <span data-translate>View Tip</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- End -->

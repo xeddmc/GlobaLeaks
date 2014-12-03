@@ -1,6 +1,6 @@
 GLClient.controller('SubmissionCtrl',
-    ['$scope', '$rootScope', '$location', 'Authentication', 'Node', 'Submission', 'Receivers', 'WhistleblowerTip',
-      function ($scope, $rootScope, $location, Authentication, Node, Submission, Receivers, WhistleblowerTip) {
+    ['$scope', '$rootScope', '$location', '$modal', 'Authentication', 'Node', 'Submission', 'Receivers', 'WhistleblowerTip',
+      function ($scope, $rootScope, $location, $modal, Authentication, Node, Submission, Receivers, WhistleblowerTip) {
 
   $rootScope.invalidForm = true;
 
@@ -114,6 +114,40 @@ GLClient.controller('SubmissionCtrl',
       }
     }
   });
+
+  var open_steps_intro = function () {
+    var modalInstance = $modal.open({
+      templateUrl: 'views/partials/steps_intro.html',
+      controller: 'StepsIntroCtrl',
+      size: 'lg',
+      scope: $scope
+    });
+
+  };
+
+  open_steps_intro();
+}]).
+controller('StepsIntroCtrl', ['$scope', '$rootScope', '$modalInstance', function ($scope, $rootScope, $modalInstance) {
+
+  steps = 3;
+
+  $scope.proceed = function () {
+    if ($scope.step < steps) {
+      $scope.step += 1;
+    }
+  }
+
+  $scope.back = function () {
+    if ($scope.step > 0) {
+      $scope.step -= 1;
+    }
+  }
+
+  $scope.cancel = function () {
+    $modalInstance.close();
+  };
+
+  $scope.step = 0;
 }]).
 controller('SubmissionFieldCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
   $scope.queue = [];
@@ -188,4 +222,46 @@ controller('SubmissionStepsCtrl', ['$scope', function($scope) {
     }
   };
 
+}]).
+controller('SubmissionFormControllerMock', ['$scope', '$rootScope', function ($scope, $rootScope) {
+  $scope.steps = [
+    [
+      {
+        "label": "File upload",
+        "hint": "Hint are",
+        "type": "fileupload"
+      }
+    ],
+    [
+      {
+        "label": "Text Area",
+        "hint": "Hint are",
+        "type": "textarea"
+      },
+   
+    ]
+  ];
+  $scope.selected_file = undefined;
+  $scope.upload_in_progress = false;
+  $scope.uploading_files = [];
+
+  $scope.upload_file = function() {
+    $scope.upload_in_progress = true;
+    var name = "file_";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        name += possible.charAt(Math.floor(Math.random() * possible.length));
+    $scope.uploading_files.push({
+      "name": name,
+      "size": Math.floor(Math.random() * 1000),
+      "type": "image"
+    });
+  };
+
+
+}]).
+controller('HideExpandController', ['$scope', '$rootScope', function($scope, $rootScope) {
+  $scope.expanded = false;
 }]);
+

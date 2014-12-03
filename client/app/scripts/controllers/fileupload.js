@@ -16,5 +16,6 @@ controller('WBFileUploadCtrlMultiple', ['$scope', 'Authentication', function($sc
     autoUpload: true,
     maxFileSize: $scope.node.maximum_filesize * 1024 * 1024
   };
+}]).
+controller('FileUploadEditFileController', ['$scope', 'Authentication', function($scope, Authentication) {
 }]);
-

@@ -268,3 +268,16 @@ table {
 .nested {
   padding-left: 15px;
 }
+
+.languagePreselector {
+  margin: 0 auto;
+  text-align: center;
+  width: 400px;
+}
+
+.languagePreselectorOpt {
+  border: #000 1px solid;
+  width: 100px;
+  height: 100px;
+  margin: 10px; 
+}

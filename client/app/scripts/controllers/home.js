@@ -38,7 +38,7 @@ GLClient.controller('HomeCtrl', ['$scope', '$location', '$modal',
         open_quiz();
       }
     };
-    
+
 }]);
 
 

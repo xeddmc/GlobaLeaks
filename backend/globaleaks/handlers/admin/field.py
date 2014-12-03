@@ -22,11 +22,10 @@ def get_field_association(store, field_id):
     ret1 = None
     ret2 = None
 
-    sf = store.find(models.StepField)
-
     sf = store.find(models.StepField, models.StepField.field_id == field_id).one()
     if sf:
         ret1 = sf.step_id
+
     ff = store.find(models.FieldField, models.FieldField.child_id == field_id).one()
     if ff:
         ret2 = ff.parent_id
@@ -91,7 +90,7 @@ def db_update_options(store, field_id, options, language):
            new_options.append(indexed_old_options[option['id']])
            del indexed_old_options[option['id']]
         else:
-           new_options.append(models.FieldOption(attrs))
+           new_options.append(models.FieldOption(opt_dict))
 
         n += 1
 

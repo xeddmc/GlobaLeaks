@@ -18,7 +18,7 @@ from globaleaks import models, LANGUAGES_SUPPORTED
 
 def get_field_option_localized_keys(field_type):
     localized_keys = []
-    if field_type == 'checkbox' or field_type =='selectbox':
+    if field_type in ['checkbox', 'selectbox', 'fileupload']:
         localized_keys = ['name']
     elif field_type == 'tos':
         localized_keys = ['clause', 'agreement_statement']
@@ -150,14 +150,13 @@ def anon_serialize_option(option, field_type, language):
     :param language: the language in which to localize data
     :return: a serialization of the object
     """
-
     ret_dict = {
         'id': option.id,
         'attrs': {}
     }
 
     keys = get_field_option_localized_keys(field_type)
-    
+
     get_localized_values(ret_dict['attrs'], option.attrs, keys, language)
 
     return ret_dict
