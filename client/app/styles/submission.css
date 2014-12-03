@@ -133,8 +133,15 @@
   z-index: 989999999;
   height: 150px;
   width: 150px;
+}
+
+.fileUploadProgressOverlay {
   background-color: black;
   opacity: 0.3;
+  height: 150px;
+  width: 150px;
+  position: absolute;
+  top: 0;
 }
 
 .fileUploadProgress .progress {
@@ -145,4 +152,20 @@
 .submissionButton {
   font-size: 25px;
   padding: 10px 100px 10px;
+}
+
+.fileUploadProgress .progress-bar {
+  transition: none;
+}
+
+.fileUploadProgress .uploadComplete {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  font-size: 50px;
+  color: white;
+}
+
+.addMoreFiles {
+  padding-bottom: 20px;
 }

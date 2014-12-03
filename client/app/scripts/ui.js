@@ -151,5 +151,25 @@ angular.module('submissionUI', []).
       });
     }
   };
+}).
+  directive('mockProgress', function(){
+    return {
+      link: function(scope, elm, attrs) {
+        var bar = $(elm).find(".progress-bar");
+        var complete = $(elm).find(".uploadComplete");
+        complete.hide();
+        bar.animate(
+          {'aria-valuenow': 100},
+          {
+            duration: 20000,
+            step: function(now) { 
+              $(this).attr("aria-valuenow", now);
+              $(this).css("width", now+"%");
+            },
+            complete: function() {
+              complete.show();
+            }
+        });
+      }
+    };
 });
-
