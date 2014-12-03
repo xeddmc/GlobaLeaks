@@ -169,3 +169,7 @@
 .addMoreFiles {
   padding-bottom: 20px;
 }
+
+.submissionFieldInput textarea {
+  height: 260px;
+}
