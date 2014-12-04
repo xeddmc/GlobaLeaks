@@ -1,0 +1,73 @@
+<!-- 
+
+This comment is needed in order to push the following strings on transifex
+
+<span data-translate>Blow the Whistle</span>
+<span data-translate>This receiver has configured the encryption key.</span>
+<span data-translate>This receiver has not configured the encryption key.</span>
+<span data-translate>Select this receiver.</span>
+<span data-translate>Unselect this receiver.</span>
+<span data-translate>Details</span>
+
+-->
+
+<div class="submissionReceipt container">
+
+  <div class="row">
+    <h3>Thank you!</h3>
+    <h4>Your submission was successful.</h4>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="receiptConfirmBox row">
+        <div class="row">
+          <div class="col-md-2">
+            <i class="receiptKey fa fa-key"></i>
+          </div>
+          <div class="col-md-10">
+            <p>
+            Remember your key code* for this submission
+            </p>
+            <p class="receiptNumber">{{fake_submission.receipt}}</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-10 col-md-offset-2">
+            <p>*Your keycode will work for two weeks after which all information will disappear</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <p>
+        We will try to get back to you as soon as possible - to see any messages we
+        send you or if you think of anything else you should have added, use
+        the 16 digit number below to login and view any comments.
+        </p>
+      </div>
+      <div class="row">
+        <a data-ng-click="view_tip(fake_submission.receipt)">View your submission</a>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="receiptToolTip">
+        <p>Top tip: How to hide your key code</p>
+
+        <p>
+        A useful way to hide your keycode submission number, is to write it down
+        like a credit card number i.e. include an expiry date too.
+        </p>
+
+        <div class="container">
+          <object cc-number="fake_submission.receipt"
+                  data="img/credit_card.svg" type="image/svg+xml"
+                  class="creditCard"></object>
+          <!-- <img src="img/credit_card.svg" class="creditCard"/> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

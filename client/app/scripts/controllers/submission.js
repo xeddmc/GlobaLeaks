@@ -4,10 +4,10 @@ GLClient.controller('SubmissionCtrl',
   
   $scope.fake_submission = {
     completed: false,
-    receipt: '3583104390243402'
+    receipt: '4898-5407-8811-6328'
   }
   $scope.fake_submit = function() {
-    $scope.fake_submission.completed = true; 
+    $location.url("/receipt");
   }
 
   $rootScope.invalidForm = true;
@@ -271,5 +271,16 @@ controller('SubmissionFormControllerMock', ['$scope', '$rootScope', function ($s
 }]).
 controller('HideExpandController', ['$scope', '$rootScope', function($scope, $rootScope) {
   $scope.expanded = false;
+}]).
+controller('ReceiptController', ['$scope', 'WhistleblowerTip', function($scope, WhistleblowerTip) {
+  $scope.fake_submission = {
+    completed: false,
+    receipt: '4898-5407-8811-6328'
+  }
+  $scope.view_tip = function (receipt) {
+    receipt = receipt.replace(/-/g, '');
+    WhistleblowerTip(receipt, function () {
+      $location.path('/status/');
+    });
+  };
 }]);
-

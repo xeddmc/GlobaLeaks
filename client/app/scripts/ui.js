@@ -137,17 +137,12 @@ angular.module('submissionUI', []).
     //   'uploadInProgress': '=',
     //   'uploadingFiles': '='
     // },
-
     scope: false,
     link: function(scope, elm, attrs) {
       elm.bind('change', function(evt) {
         scope.$root[attrs.uploadInProgress] = true;
         scope.$root[attrs.uploadingFiles] = true;
         scope.$root.$apply();
-
-        // console.log(scope.uploadInProgress);
-        // scope.uploadInProgress = true;
-        // scope.uploadingFiles.push(evt.target.files[0]);
       });
     }
   };
@@ -172,4 +167,19 @@ angular.module('submissionUI', []).
         });
       }
     };
+}).
+  directive('ccNumber', function(){
+    return {
+      scope: {
+        "ccNumber": "&",
+      },
+      link: function(scope, elm, attrs)  {
+        var svgItem = $(elm)[0];
+        svgItem.addEventListener("load",function(){
+          var ccnumber = svgItem.contentDocument;
+          ccnumber = ccnumber.getElementById("ccnumber");
+          ccnumber.innerHTML = scope.ccNumber();
+        });
+      }
+    }  
 });
