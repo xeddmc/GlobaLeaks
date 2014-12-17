@@ -1,4 +1,5 @@
-GLClient.controller('WBFileUploadCtrlSingle', ['$scope', 'Authentication', function($scope, Authentication) {
+GLClient.
+controller('WBFileUploadCtrlSingle', ['$scope', 'Authentication', function($scope, Authentication) {
   $scope.options = {
     url: $scope.fileupload_url,
     multipart: false,
@@ -29,5 +30,5 @@ controller('FileUploadEditFileController', ['$scope', 'Authentication', function
     if ($scope.file_title) {
       $scope.empty_t = false; 
     }
-  }
+  };
 }]);

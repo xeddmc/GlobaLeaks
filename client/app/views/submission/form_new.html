@@ -31,7 +31,21 @@
               </div>
 
               <div data-ng-switch-when="fileupload">
-                <button class="btn btn-default actionButton submissionButton" data-ng-click="upload_file()">+ Add file</button>
+
+                <form id="fileupload" action="{{fileupload_url}}"
+                  method="POST" enctype="multipart/form-data"
+                  data-ng-app="GLClient.fileuploader"
+                  data-ng-controller="FileUploadController"
+                  data-file-upload="fileupload_options"
+                  data-ng-class="{'fileupload-processing': processing() || loadingFiles}">
+                  <span class="btn btn-default fileinput-button actionButton submissionButton" data-ng-disabled="disabled">
+                    <span data-translate>+ Add file</span>
+                    <input type="file" name="files[]" multiple data-ng-disabled="disabled">
+                  </span>
+                </form>
+
+                <!-- button class="btn btn-default actionButton submissionButton" data-ng-click="upload_file()">+ Add file</button -->
+
               </div>
             </div>
 

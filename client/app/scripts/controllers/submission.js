@@ -2,6 +2,15 @@ GLClient.controller('SubmissionCtrl',
     ['$scope', '$rootScope', '$location', '$modal', 'Authentication', 'Node', 'Submission', 'Receivers', 'WhistleblowerTip',
       function ($scope, $rootScope, $location, $modal, Authentication, Node, Submission, Receivers, WhistleblowerTip) {
   
+  $scope.queue = [];
+  $scope.upload_in_progress = false;
+  $scope.fileupload_options = {
+    //url: $scope.fileupload_url,
+    multipart: false,
+    headers: Authentication.headers(),
+    autoUpload: true,
+    maxFileSize: $scope.node.maximum_filesize * 1024 * 1024
+  }
   $scope.fake_submission = {
     completed: false,
     receipt: '4898-5407-8811-6328'
@@ -104,6 +113,7 @@ GLClient.controller('SubmissionCtrl',
     if ($scope.current_context) {
       $scope.submission.create(function () {
         $scope.fileupload_url = '/submission/' + $scope.submission.current_submission.id + '/file';
+        //$scope.fileupload_options["url"] = $scope.fileupload_url;
       });
       checkReceiverSelected();
      }
@@ -158,7 +168,6 @@ controller('StepsIntroCtrl', ['$scope', '$rootScope', '$modalInstance', function
   $scope.step = 0;
 }]).
 controller('SubmissionFieldCtrl', ['$scope', '$rootScope', function ($scope, $rootScope) {
-  $scope.queue = [];
   $scope.$watch('queue', function () {
     $scope.$parent.uploading = false;
     if ($scope.queue) {

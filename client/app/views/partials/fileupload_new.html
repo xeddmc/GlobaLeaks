@@ -1,72 +1,57 @@
-<div data-ng-show="upload_in_progress" class="uploadingBox">
+<div data-ng-show="queue.length > 0" class="uploadingBox">
   <div class="row">
     <h2>Uploading files...</h2>
     <hr>
   </div>
   <div class="row">
-    <form id="fileupload" action="" method="POST" enctype="multipart/form-data"
-      data-ng-app="GLClient.fileuploader"
-      data-file-upload="options" data-ng-class="{'fileupload-processing':
-      processing() || loadingFiles}">
+    <div data-ng-repeat="file in queue">
 
-      <div data-ng-repeat="file in uploading_files">
-
-        <div class="fileUploadBox" data-ng-controller="FileUploadEditFileController">
-          <div class="row">
-            <div class="col-md-4">
-              <div class="filePreview">
-                <img src="http://placehold.it/150x150"/>
-                <div class="fileUploadProgress" mock-progress>
-                  <div class="fileUploadProgressOverlay">
-                  </div>
-                  <div class="uploadComplete">
-                    <i class="glyphicon glyphicon-ok"></i>
-                  </div>
-                  <div class="progress">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                      <span class="sr-only">60% Complete</span>
-                    </div>
-                  </div>
+      <div class="fileUploadBox" data-ng-controller="FileUploadEditFileController">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="filePreview">
+              <img src="http://placehold.it/150x150"/>
+              <div class="fileUploadProgress" mock-progress>
+                <div class="fileUploadProgressOverlay">
                 </div>
-              </div>
-            </div>
-            <div class="col-md-8">
-              <div class="fileDetails">
-                <div class="fileName">
-                  <span>{{file.name}}</span>
+                <div class="uploadComplete">
+                  <i class="glyphicon glyphicon-ok"></i>
                 </div>
-                <div class="fileDetailsEntry form-group" data-ng-class="{'has-warning': empty_t}">
-                  <textarea class="form-control" data-ng-change="edit()" data-ng-model="file_title" placeholder="title"></textarea>
-                </div>
-                <div class="fileDetailsEntry form-group" data-ng-class="{'has-warning': empty_d}">
-                  <textarea class="form-control" data-ng-change="edit()" data-ng-model="file_desc" placeholder="description"></textarea>
+                <div class="progress">
+                  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    <span class="sr-only">60% Complete</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-2">
-              <button class="btn btn-default actionButton">delete</button>
+          <div class="col-md-8">
+            <div class="fileDetails">
+              <div class="fileName">
+                <span>{{file.name}}</span>
+              </div>
+              <div class="fileDetailsEntry form-group" data-ng-class="{'has-warning': empty_t}">
+                <textarea class="form-control" data-ng-change="edit()" data-ng-model="file_title" placeholder="title"></textarea>
+              </div>
+              <div class="fileDetailsEntry form-group" data-ng-class="{'has-warning': empty_d}">
+                <textarea class="form-control" data-ng-change="edit()" data-ng-model="file_desc" placeholder="description"></textarea>
+              </div>
             </div>
-
           </div>
         </div>
-        <hr/>
+        <div class="row">
+          <div class="col-md-2">
+            <button class="btn btn-default actionButton">delete</button>
+          </div>
+
+        </div>
       </div>
-      <div class="row addMoreFiles">
-        <div class="col-md-4">
-          <a data-ng-click="upload_file()">+ Add more files</a>
-        </div>
-      </div> 
-      <!-- <div class="fileUploadAddContainer col-md-2"> -->
-      <!--   <div class="fileUploadAdd"> -->
-      <!--     <div class="row"> -->
-      <!--       <div class="fileUploadAddButton"> -->
-      <!--         <button class="btn btn-default actionButton">Add file</button> -->
-      <!--       </div> -->
-      <!--     </div> -->
-      <!--   </div> -->
-      <!-- </div> -->
-    </form>
+      <hr/>
+    </div>
+    <div class="row addMoreFiles">
+      <div class="col-md-4">
+        <a data-ng-click="upload_file()">+ Add more files</a>
+      </div>
+    </div> 
   </div>
 </div>
