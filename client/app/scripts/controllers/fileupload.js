@@ -31,4 +31,6 @@ controller('FileUploadEditFileController', ['$scope', 'Authentication', function
       $scope.empty_t = false; 
     }
   };
+}]).
+controller('FileDestroyController', ['$scope', 'Authentication', function($scope, Authentication) {
 }]);

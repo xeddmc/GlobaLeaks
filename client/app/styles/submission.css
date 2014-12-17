@@ -154,6 +154,11 @@
   padding: 10px 100px 10px;
 }
 
+.imgPreview {
+  height: 150px;
+  width: 150px;
+}
+
 .fileUploadProgress .progress-bar {
   transition: none;
 }

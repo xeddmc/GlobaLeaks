@@ -4,24 +4,40 @@
     <hr>
   </div>
   <div class="row">
-    <div data-ng-repeat="file in queue">
-
+    <div data-ng-repeat="file in queue" data-ng-class="{'processing': file.$processing()}">
       <div class="fileUploadBox" data-ng-controller="FileUploadEditFileController">
         <div class="row">
           <div class="col-md-4">
             <div class="filePreview">
-              <img src="http://placehold.it/150x150"/>
-              <div class="fileUploadProgress" mock-progress>
+              <div class="imgPreview" data-ng-switch data-on="!!file.thumbnailUrl">
+                <div class="preview thumbnailPreview" data-ng-switch-when="true">
+                  <a data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}" data-gallery>
+                    <img data-ng-src="{{file.thumbnailUrl}}" alt="">
+                  </a>
+                </div>
+                <div class="preview thumbnailPreview"
+                     data-ng-switch-default data-file-upload-preview="file">
+                </div>
+              </div>
+              <div class="fileUploadProgress">
                 <div class="fileUploadProgressOverlay">
                 </div>
-                <div class="uploadComplete">
+                <div class="uploadComplete" data-ng-show="file.elapsed_time > 0">
                   <i class="glyphicon glyphicon-ok"></i>
                 </div>
-                <div class="progress">
-                  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                    <span class="sr-only">60% Complete</span>
-                  </div>
+                <div class="progress progress-striped active fade"
+                     data-ng-class="{pending: 'in'}[file.$state()]"
+                     data-file-upload-progress="file.$progress()">
+                  <div class="progress-bar progress-bar-success" data-ng-style="{width: num + '%'}"></div>
                 </div>
+
+                <!-- <div class="progress progress-striped active fade" data-ng-class="{pending: 'in'}[file.$state()]" -->
+                <!--        data-file-upload-progress="progress()"> -->
+                <!--   <div class="progress-bar progress-bar-success" -->
+                <!--        data-ng-style="{width: num + '%'}"> -->
+                <!--     <span class="sr-only">60% Complete</span> -->
+                <!--   </div> -->
+                <!-- </div> -->
               </div>
             </div>
           </div>
@@ -41,7 +57,9 @@
         </div>
         <div class="row">
           <div class="col-md-2">
-            <button class="btn btn-default actionButton">delete</button>
+            <button data-ng-controller="FileDestroyController"
+                    type="button" class="btn btn-default actionButton"
+                    data-ng-click="file.$destroy()">delete</button>
           </div>
 
         </div>

@@ -3,9 +3,7 @@ GLClient.controller('SubmissionCtrl',
       function ($scope, $rootScope, $location, $modal, Authentication, Node, Submission, Receivers, WhistleblowerTip) {
   
   $scope.queue = [];
-  $scope.upload_in_progress = false;
   $scope.fileupload_options = {
-    //url: $scope.fileupload_url,
     multipart: false,
     headers: Authentication.headers(),
     autoUpload: true,
@@ -113,7 +111,6 @@ GLClient.controller('SubmissionCtrl',
     if ($scope.current_context) {
       $scope.submission.create(function () {
         $scope.fileupload_url = '/submission/' + $scope.submission.current_submission.id + '/file';
-        //$scope.fileupload_options["url"] = $scope.fileupload_url;
       });
       checkReceiverSelected();
      }
