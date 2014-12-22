@@ -20,7 +20,6 @@ import getpass
 import tempfile
 import transaction
 
-from ConfigParser import ConfigParser
 from optparse import OptionParser
 from ctypes import CDLL
 
@@ -29,10 +28,51 @@ from twisted.internet import reactor
 from twisted.internet.threads import deferToThreadPool
 from storm import exceptions, tracer
 from storm.zope.zstorm import ZStorm
+from storm.databases.sqlite import sqlite
 from cyclone.web import HTTPError
 from cyclone.util import ObjectDict as OD
 
 from globaleaks import __version__, DATABASE_VERSION, LANGUAGES_SUPPORTED_CODES
+
+
+# XXX. MONKEYPATCH TO SUPPORT STORM 0.19
+import storm.databases.sqlite
+
+class SQLite(storm.databases.sqlite.Database):
+
+    connection_factory = storm.databases.sqlite.SQLiteConnection
+
+    def __init__(self, uri):
+        if sqlite is storm.databases.sqlite.dummy:
+            raise storm.databases.sqlite.DatabaseModuleError("'pysqlite2' module not found")
+        self._filename = uri.database or ":memory:"
+        self._timeout = float(uri.options.get("timeout", 5))
+        self._synchronous = uri.options.get("synchronous")
+        self._journal_mode = uri.options.get("journal_mode")
+        self._foreign_keys = uri.options.get("foreign_keys")
+
+    def raw_connect(self):
+        # See the story at the end to understand why we set isolation_level.
+        raw_connection = sqlite.connect(self._filename, timeout=self._timeout,
+                                        isolation_level=None)
+        if self._synchronous is not None:
+            raw_connection.execute("PRAGMA synchronous = %s" %
+                                   (self._synchronous,))
+
+        if self._journal_mode is not None:
+            raw_connection.execute("PRAGMA journal_mode = %s" %
+                                   (self._journal_mode,))
+
+        if self._foreign_keys is not None:
+            raw_connection.execute("PRAGMA foreign_keys = %s" %
+                                   (self._foreign_keys,))
+
+        return raw_connection
+
+
+storm.databases.sqlite.SQLite = SQLite
+storm.databases.sqlite.create_from_uri = SQLite
+# XXX. END MONKEYPATCH
 
 verbosity_dict = {
     'DEBUG': logging.DEBUG,
@@ -48,19 +88,6 @@ external_counted_events = {
     'anon_requests': 0,
     'file_uploaded': 0,
 }
-
-def stats_counter(element):
-    """
-    Stats counter is called every 30 seconds and make a first dump of the
-    variable in memory: GLSetting.anomailes_counter
-    Then in jobs/statistics_sched.py is transformed in statistic.
-
-    @param element: one of the four element above
-    @return: None, but increment internal counters
-    """
-    assert GLSetting.anomalies_counter.has_key(element), "Invalid usage of stats_counter"
-    GLSetting.anomalies_counter[element] += 1
-
 
 class GLSettingsClass:
 
@@ -111,14 +138,13 @@ class GLSettingsClass:
         self.working_path = '/var/globaleaks'
         self.static_source = '/usr/share/globaleaks/glbackend'
         self.glclient_path = '/usr/share/globaleaks/glclient'
-        self.ramdisk_path = '/dev/shm/globaleaks'
-        if not os.path.isdir(self.ramdisk_path):
-            self.ramdisk_path = tempfile.mkdtemp()
+
+        self.set_ramdisk_path()
 
         # list of plugins available in the software
         self.notification_plugins = [
             'MailNotification',
-            ]
+        ]
 
         self.default_password = 'globaleaks'
 
@@ -152,25 +178,29 @@ class GLSettingsClass:
 
         self.www_form_urlencoded_maximum_size = 1024
 
-        self.defaults = OD()
+
         # Default values, used to initialize DB at the first start,
         # or whenever the value is not supply by client.
         # These value are then stored in the single instance
         # (Node, Receiver or Context) and then can be updated by
         # the admin using the Admin interface (advanced settings)
-        self.defaults.allow_unencrypted = False
-        self.defaults.x_frame_options_mode = 'deny'
-        self.defaults.x_frame_options_allow_from = ''
-        self.defaults.tor2web_admin = False
+        self.defaults = OD()
+
+        # default tor2web_admin setting is set to True;
+        # the setting is then switched based on automatic user detection during wizard:
+        #
+        #   - if the admin performs the wizard via tor2web the permission is kept True
+        #   - if the admin performs the wizard via Tor the permission is set to False
+        self.defaults.tor2web_admin = True
+
         self.defaults.tor2web_submission = False
         self.defaults.tor2web_receiver = False
         self.defaults.tor2web_unauth = True
-        self.defaults.anomaly_checks = False
+        self.defaults.allow_unencrypted = False
         self.defaults.maximum_namesize = 128
         self.defaults.maximum_textsize = 4096
         self.defaults.maximum_filesize = 30 # expressed in megabytes
         self.defaults.exception_email = u"globaleaks-stackexception@lists.globaleaks.org"
-
         # Context dependent values:
         self.defaults.receipt_regexp = u'[0-9]{16}'
         self.defaults.tip_seconds_of_life = (3600 * 24) * 15
@@ -184,19 +214,16 @@ class GLSettingsClass:
         # Some operation, like check for maximum file, can't access
         # to the DB every time. So when some Node values are updated
         # here are copied, in order to permit a faster comparison
+        # updated by globaleaks/db/__init__.import_memory_variables
         self.memory_copy.maximum_filesize = self.defaults.maximum_filesize
         self.memory_copy.maximum_textsize = self.defaults.maximum_textsize
         self.memory_copy.maximum_namesize = self.defaults.maximum_namesize
         self.memory_copy.allow_unencrypted = self.defaults.allow_unencrypted
-        self.memory_copy.x_frame_options_mode = self.defaults.x_frame_options_mode
-        self.memory_copy.x_frame_options_allow_from = self.defaults.x_frame_options_allow_from
         self.memory_copy.tor2web_admin = self.defaults.tor2web_admin
         self.memory_copy.tor2web_submission = self.defaults.tor2web_submission
         self.memory_copy.tor2web_receiver = self.defaults.tor2web_receiver
         self.memory_copy.tor2web_unauth = self.defaults.tor2web_unauth
-        self.memory_copy.anomaly_checks = self.defaults.anomaly_checks
         self.memory_copy.exception_email = self.defaults.exception_email
-        # updated by globaleaks/db/__init__.import_memory_variables
         self.memory_copy.default_language = self.defaults.default_language
         self.memory_copy.default_timezone = self.defaults.default_timezone
         self.memory_copy.notif_server = None
@@ -205,14 +232,6 @@ class GLSettingsClass:
         self.memory_copy.notif_security = None
         # import_memory_variables is called after create_tables and node+notif updating
 
-        self.anomalies_counter = dict(external_counted_events)
-        # this dict keep track of some 'external' events and is
-        # cleaned periodically (10 minutes in stats)
-        self.anomalies_list = []
-        # this is the collection of the messages shall be reported to the admin
-        self.anomalies_messages = []
-        # maximum amount of element riported by /admin/anomalies and /admin/stats
-        self.anomalies_report_limit = 20
 
         # Default delay threshold
         self.delay_threshold = 0.800
@@ -323,11 +342,20 @@ class GLSettingsClass:
             self.glclient_path = custom_glclient_path
 
 
+    def set_ramdisk_path(self):
+        self.ramdisk_path = '/dev/shm/globaleaks'
+        if not os.path.isdir('/dev/shm'):
+            self.ramdisk_path = os.path.join(self.working_path, 'ramdisk')
+
+        self.log_debug("Setting ramdisk to: %s" % self.ramdisk_path)
+
     def set_devel_mode(self):
         self.devel_mode = True
         self.pid_path = os.path.join(self.root_path, 'workingdir')
         self.working_path = os.path.join(self.root_path, 'workingdir')
         self.static_source = os.path.join(self.root_path, 'staticdata')
+
+        self.set_ramdisk_path()
 
         self.glclient_path = os.path.abspath(os.path.join(self.root_path, "..", "client", "build"))
         if not os.path.exists(self.glclient_path):
@@ -780,6 +808,7 @@ class transact(object):
         """
         zstorm = ZStorm()
         zstorm.set_default_uri(GLSetting.store_name, GLSetting.db_uri)
+
         return zstorm.get(GLSetting.store_name)
 
     def _wrap(self, function, *args, **kwargs):
@@ -788,21 +817,23 @@ class transact(object):
         passing the store to it.
         """
         self.store = self.get_store()
+
         try:
             if self.instance:
                 result = function(self.instance, self.store, *args, **kwargs)
             else:
                 result = function(self.store, *args, **kwargs)
+
         except (exceptions.IntegrityError, exceptions.DisconnectionError):
             transaction.abort()
+            # we print the exception here because we do not propagate it
+            traceback.print_exc()
             result = None
         except HTTPError as excep:
             transaction.abort()
             raise excep
         except Exception:
             transaction.abort()
-            _, exception_value, exception_tb = sys.exc_info()
-            traceback.print_tb(exception_tb, 10)
             self.store.close()
             # propagate the exception
             raise

@@ -14,14 +14,13 @@ import shutil
 
 from twisted.internet import threads
 from twisted.internet.defer import inlineCallbacks
-from cyclone.web import StaticFileHandler
 
-from globaleaks.settings import transact, transact_ro, GLSetting, stats_counter
-from globaleaks.handlers.base import BaseHandler, BaseStaticFileHandler, anomaly_check
+from globaleaks.settings import transact, transact_ro, GLSetting
+from globaleaks.handlers.base import BaseHandler
 from globaleaks.handlers.authentication import transport_security_check, authenticated, unauthenticated
 from globaleaks.utils.utility import log, datetime_to_ISO8601
 from globaleaks.rest import errors
-from globaleaks.models import ReceiverTip, ReceiverFile, InternalTip, InternalFile, WhistleblowerTip
+from globaleaks.models import ReceiverFile, InternalTip, InternalFile, WhistleblowerTip
 from globaleaks.security import access_tip
 
 def serialize_file(internalfile):
@@ -99,7 +98,7 @@ def dump_file_fs(uploaded_file):
 
 
 @transact_ro
-def get_tip_by_submission(store, itip_id):
+def validate_itip_id(store, itip_id):
 
     itip = store.find(InternalTip,
                       InternalTip.id == itip_id).one()
@@ -110,11 +109,11 @@ def get_tip_by_submission(store, itip_id):
     if itip.mark != InternalTip._marker[0]:
         log.err("Denied access on a concluded submission")
         raise errors.SubmissionConcluded
-    else:
-        return itip.id
+
+    return True
 
 @transact_ro
-def get_tip_by_wbtip(store, wb_tip_id):
+def get_itip_id_by_wbtip_id(store, wb_tip_id):
 
     wb_tip = store.find(WhistleblowerTip,
                         WhistleblowerTip.id == wb_tip_id).one()
@@ -169,7 +168,6 @@ class FileAdd(FileHandler):
 
     @transport_security_check('wb')
     @authenticated('wb')
-    @anomaly_check('file_uploaded')
     @inlineCallbacks
     def post(self, *args):
         """
@@ -177,8 +175,7 @@ class FileAdd(FileHandler):
         Response: Unknown
         Errors: TipIdNotFound
         """
-        stats_counter('file_uploaded')
-        itip_id = yield get_tip_by_wbtip(self.current_user.user_id)
+        itip_id = yield get_itip_id_by_wbtip_id(self.current_user.user_id)
 
         # Call the master class method
         yield self.handle_file_upload(itip_id)
@@ -190,7 +187,6 @@ class FileInstance(FileHandler):
 
     @transport_security_check('wb')
     @unauthenticated
-    @anomaly_check('file_uploaded')
     @inlineCallbacks
     def post(self, submission_id, *args):
         """
@@ -199,11 +195,10 @@ class FileInstance(FileHandler):
         Response: Unknown
         Errors: SubmissionIdNotFound, SubmissionConcluded
         """
-        stats_counter('file_uploaded')
-        itip_id = yield get_tip_by_submission(submission_id)
+        yield validate_itip_id(submission_id)
 
         # Call the master class method
-        yield self.handle_file_upload(itip_id)
+        yield self.handle_file_upload(submission_id)
 
 
 @transact

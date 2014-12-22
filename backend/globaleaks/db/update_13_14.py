@@ -6,12 +6,9 @@
     Node table:
       - introduced x_frame_options_mode and x_frame_options_allow_from.
 
-<<<<<<< HEAD
     Context table:
       - introduced enable_private_messages
 
-=======
->>>>>>> origin/feature/automatic_sessions
 """
 
 from storm.locals import Pickle, Int, Bool, Pickle, Unicode, DateTime
@@ -83,10 +80,10 @@ class Context_version_13(Model):
 class Replacer1314(TableReplacer):
 
     def migrate_Node(self):
-        print "%s Node migration assistant: (x_frame_options_mode, x_frame_options_allow_from, \
-                                             disable_privacy_badge, disable_security_awareness_badge, \
-                                             disable_security_awareness_questions, security_awareness_title, \
-                                             security_awareness_text" % self.std_fancy
+        print "%s Node migration assistant: (x_frame_options_mode, x_frame_options_allow_from," \
+                                            "disable_privacy_badge, disable_security_awareness_badge," \
+                                            "disable_security_awareness_questions, security_awareness_title," \
+                                            "security_awareness_text" % self.std_fancy
 
         appdata = opportunistic_appdata_init()
 

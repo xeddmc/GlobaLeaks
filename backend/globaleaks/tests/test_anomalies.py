@@ -1,29 +1,75 @@
 # -*- encoding: utf-8 -*-
 
-from twisted.internet.defer import inlineCallbacks
+from twisted.internet import task, defer
 
+from globaleaks import anomaly
 from globaleaks.tests import helpers
 from globaleaks.jobs import statistics_sched
-from globaleaks.settings import GLSetting, external_counted_events
+from globaleaks.settings import GLSetting
 
-class TestEmail(helpers.TestGL):
+anomaly.reactor = task.Clock()
 
-    def increment_accesses(self, amount):
+class TestAlarm(helpers.TestGL):
+    """
+    This test mostly the function in anomaly.py Alarm object
+    """
 
-        for element in external_counted_events.keys():
-            GLSetting.anomalies_counter[element] = amount
+    def test_event_accouting(self):
 
-    @inlineCallbacks
-    def test_anomalies(self):
-        yield helpers.TestGL.setUp(self)
-        # First round 10
-        self.increment_accesses(10)
-        statistics_sched.AnomaliesSchedule().operation()
-        # Second round 30
-        self.increment_accesses(30)
-        statistics_sched.AnomaliesSchedule().operation()
-        # Third round 30
-        self.increment_accesses(30)
-        statistics_sched.AnomaliesSchedule().operation()
-        # Stats!
-        yield statistics_sched.StatisticsSchedule().operation()
+        anomaly.Alarm.compute_activity_level()
+
+        # create one event per type.
+        for event_obj in anomaly.outcome_event_monitored:
+            anomaly.EventTrack(event_obj, 1.0)
+
+        x = anomaly.EventTrackQueue.take_current_snapshot()
+        self.assertTrue(len(x) > 1)
+
+
+    def test_token_difficulty(self):
+        self.skipTest("Captcha difficulty implemented but not updated")
+
+        a = anomaly.Alarm()
+
+        self.assertEqual(anomaly.outcome_event_monitored[3]['name'], 'submission_completed')
+        for x in xrange(100):
+            # emulate 100 submission completed
+            anomaly.EventTrack(anomaly.outcome_event_monitored[3], 0.0)
+
+        d = anomaly.Alarm.compute_activity_level()
+
+        # adjust the stress_level and check if the expected behavior is placed
+        anomaly.Alarm.stress_levels['activity'] = 1
+        self.assertTrue(a.get_token_difficulty()['graph_captcha'])
+
+        anomaly.Alarm.stress_levels['activity'] = 0
+        self.assertFalse(a.get_token_difficulty()['graph_captcha'])
+
+        anomaly.Alarm.stress_levels['disk_space'] = 1
+        self.assertTrue(a.get_token_difficulty()['human_captcha'])
+
+        anomaly.Alarm.stress_levels['disk_space'] = 0
+        self.assertFalse(a.get_token_difficulty()['human_captcha'])
+
+
+    @defer.inlineCallbacks
+    def test_compute_activity_level(self):
+        """
+        remind: activity level is called every 30 seconds by
+        """
+        anomaly.pollute_Event_for_testing()
+        previous_len = len(anomaly.EventTrackQueue.take_current_snapshot())
+
+        anomaly.pollute_Event_for_testing()
+        self.assertEqual(len(
+            anomaly.EventTrackQueue.take_current_snapshot()
+        ), previous_len * 2)
+
+        activity_level = yield anomaly.Alarm.compute_activity_level()
+        description = anomaly.Alarm.get_description_status()
+        self.assertEqual(activity_level, 2)
+
+        # Has not slow comeback to 0
+        activity_level = yield anomaly.Alarm.compute_activity_level()
+        self.assertEqual(activity_level, 0)
+

@@ -1,20 +1,8 @@
-<!-- 
-
-This comment is needed in order to push the following strings on transifex
-
-<span data-translate>Enter your receipt</span>
-<span data-translate>View Tip</span>
-<span data-translate>Are you a receiver?</span>
-<span data-translate>Login page</span>
-
--->
 <div id="ContentBox" class="container">
   <div id="HomePageBox">
 
     <div id="HomePageBoxHeader">
-      <div id="HomePageBoxNodePresentation">
-        {{ node.presentation }}
-      </div>
+      <div id="HomePageBoxNodePresentation">{{ node.presentation }}</div>
       <div id="HomePageBoxNodeDescription" class="preformatted">{{node.description}}</div>
     </div>
 
@@ -34,18 +22,18 @@ This comment is needed in order to push the following strings on transifex
         <div class="row" data-ng-show="node.tor2web_submission || anonymous">
           <div id="WhistleblowerSubmitBox">
             <div id="WhistleblowerSubmitBoxHeader">
-              <span data-translate>Are you a whistleblower?</span>
+              <span>{{node.whistleblowing_question}}</span>
             </div>
             <div id="WhistleblowerSubmitBoxButton">
               <a data-ng-click="goToSubmission()" class="btn btn-primary">
                 <i class="glyphicon glyphicon-bullhorn"></i>
-                <span data-translate>Blow the Whistle</span>
+                <span>{{node.whistleblowing_button}}</span>
               </a>
             </div>
           </div>
           <div id="WhistleblowerLoginBox" class="center-block">
             <div>
-              <h3 data-translate>Have you already filed a submission? Enter your receipt.</h3>
+              <h3 data-translate>Have you already filed a submission? Enter your key code.</h3>
             </div>
             <div data-ng-include="'views/partials/wb_login.html'"></div>
             <div class="LoginErrorBoxHomepage row" data-ng-show="errors[0].code == 29">
@@ -53,9 +41,9 @@ This comment is needed in order to push the following strings on transifex
                 <div class="alert alert-danger">
                   <div>
                     <span data-translate>Cannot Login</span>:
-                    <span>The Key Code is either invalid or the Tip has expired.</span>
+                    <span data-translate>The key code is either invalid or the submission has expired.</span>
                   </div>
-                  <div data-translate>Please check your Key Code and try again or make a new Submission.</div>
+                  <div data-translate>Please check your key code and try again or make a new submission.</div>
                 </div>
               </div>
             </div>

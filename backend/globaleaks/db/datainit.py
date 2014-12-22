@@ -3,6 +3,7 @@
 #   ******************
 from __future__ import with_statement
 
+import json
 import re
 import os
 
@@ -25,19 +26,19 @@ def opportunistic_appdata_init():
     # Fields and applicative data initialization
 
     fields_l10n = [ "/usr/share/globaleaks/glclient/data/appdata_l10n.json",
-                    "../client/app/data/appdata_l10n.json",
-                    "../client/build/data/appdata_l10n.json",
-                    "../../client/app/data/appdata_l10n.json",
-                    "../../client/build/data/appdata_l10n.json"]
+                    "../../../client/app/data/appdata_l10n.json",
+                    "../../../client/build/data/appdata_l10n.json"]
 
     appdata_dict = None
 
+    this_directory = os.path.dirname(__file__)
+
     for fl10n in fields_l10n:
+        fl10n_file = os.path.join(this_directory, fl10n)
 
-        if os.path.exists(fl10n):
+        if os.path.exists(fl10n_file):
 
-            with file(fl10n, 'r') as f:
-                import json
+            with file(fl10n_file, 'r') as f:
                 json_string = f.read()
                 appdata_dict = json.loads(json_string)
                 return appdata_dict
@@ -90,11 +91,13 @@ def initialize_node(store, results, only_node, appdata):
         'state': u'enabled',
         'language': u"en",
         'timezone': 0,
+        'password_change_needed': False,
     }
 
     admin = models.User(admin_dict)
 
     admin.last_login = datetime_null()
+    admin.password_change_date = datetime_null()
 
     store.add(admin)
 
@@ -118,9 +121,6 @@ def initialize_node(store, results, only_node, appdata):
 
         # Todo handle pgp_expiration_alert and pgp_expiration_notice already included in client/app/data/txt
         # and internationalized with right support on backend db.
-        if k in ['pgp_expiration_alert', 'pgp_expiration_notice']:
-            continue
-
         if k in appdata['templates']:
             setattr(notification, k, appdata['templates'][k])
 
@@ -147,11 +147,7 @@ def import_memory_variables(store):
         GLSetting.memory_copy.tor2web_receiver = node.tor2web_receiver
         GLSetting.memory_copy.tor2web_unauth = node.tor2web_unauth
 
-        GLSetting.memory_copy.anomaly_checks = node.anomaly_checks
         GLSetting.memory_copy.allow_unencrypted = node.allow_unencrypted
-
-        GLSetting.memory_copy.x_frame_options_mode = node.x_frame_options_mode
-        GLSetting.memory_copy.x_frame_options_allow_from = node.x_frame_options_allow_from
 
         GLSetting.memory_copy.exception_email = node.exception_email
         GLSetting.memory_copy.default_language = node.default_language
@@ -171,7 +167,6 @@ def import_memory_variables(store):
 
     except Exception as e:
         raise errors.InvalidInputFormat("Cannot import memory variables: %s" % e)
-
 
 @transact
 def apply_cli_options(store):

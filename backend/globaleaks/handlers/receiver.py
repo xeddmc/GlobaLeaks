@@ -8,24 +8,23 @@
 from twisted.internet.defer import inlineCallbacks
 from storm.expr import Desc
 
-from globaleaks.utils.utility import log, acquire_bool, datetime_to_ISO8601
-from globaleaks.utils.structures import Rosetta, Fields
+from globaleaks.handlers.admin import db_get_context_fields
+from globaleaks.handlers.authentication import authenticated, transport_security_check
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.models import Receiver, Context, ReceiverTip, ReceiverFile, Message, Node
-from globaleaks.settings import transact, transact_ro, GLSetting
-from globaleaks.handlers.authentication import authenticated, transport_security_check
 from globaleaks.rest import requests, errors
 from globaleaks.security import change_password, gpg_options_parse
-
+from globaleaks.settings import transact, transact_ro, GLSetting
+from globaleaks.utils.structures import Rosetta, get_localized_values
+from globaleaks.utils.utility import log, acquire_bool, datetime_to_ISO8601, datetime_now
 
 # https://www.youtube.com/watch?v=BMxaLEGCVdg
 def receiver_serialize_receiver(receiver, language=GLSetting.memory_copy.default_language):
-    receiver_dict = {
+    ret_dict = {
         "id": receiver.id,
         "name": receiver.name,
         "update_date": datetime_to_ISO8601(receiver.last_update),
         "creation_date": datetime_to_ISO8601(receiver.creation_date),
-        "receiver_level": receiver.receiver_level,
         "can_delete_submission": receiver.can_delete_submission,
         "username": receiver.user.username,
         "gpg_key_info": receiver.gpg_key_info,
@@ -34,28 +33,22 @@ def receiver_serialize_receiver(receiver, language=GLSetting.memory_copy.default
         "gpg_key_armor": receiver.gpg_key_armor,
         "gpg_key_status": receiver.gpg_key_status,
         "gpg_enable_notification": receiver.gpg_enable_notification,
-        "tags": receiver.tags,
         "tip_notification" : receiver.tip_notification,
         "file_notification" : receiver.file_notification,
         "comment_notification" : receiver.comment_notification,
         "message_notification" : receiver.message_notification,
         "mail_address": receiver.mail_address,
-                    # list is needed because .values returns a generator
-        "contexts": list(receiver.contexts.values(Context.id)),
+        "contexts": [c.id for c in receiver.contexts],
         "password": u'',
         "old_password": u'',
         'language': receiver.user.language,
         'timezone': receiver.user.timezone
     }
 
-    mo = Rosetta()
-    mo.acquire_storm_object(receiver)
-    receiver_dict["description"] = mo.dump_translated('description', language)
-
     for context in receiver.contexts:
-        receiver_dict['contexts'].append(context.id)
+        ret_dict['contexts'].append(context.id)
 
-    return receiver_dict
+    return get_localized_values(ret_dict, receiver, receiver.localized_strings, language)
 
 @transact_ro
 def get_receiver_settings(store, receiver_id, language=GLSetting.memory_copy.default_language):
@@ -86,8 +79,10 @@ def update_receiver_settings(store, receiver_id, request, language=GLSetting.mem
                                                  new_password,
                                                  receiver.user.salt)
 
-        if receiver.user.state == 'password_change_needed':
-            receiver.user.state = 'enabled'
+        if receiver.user.password_change_needed:
+            receiver.user.password_change_needed = False
+
+        receiver.user.password_change_date = datetime_now()
 
     mail_address = request['mail_address']
 
@@ -191,7 +186,6 @@ def get_receiver_tip_list(store, receiver_id, language=GLSetting.memory_copy.def
 
         single_tip_sum = dict({
             'id' : rtip.id,
-            'expressed_pertinence': rtip.expressed_pertinence,
             'creation_date' : datetime_to_ISO8601(rtip.creation_date),
             'last_access' : datetime_to_ISO8601(rtip.last_access),
             'expiration_date' : datetime_to_ISO8601(rtip.internaltip.expiration_date),
@@ -205,25 +199,16 @@ def get_receiver_tip_list(store, receiver_id, language=GLSetting.memory_copy.def
             'can_delete_submission': can_delete_submission,
         })
 
-        mo = Rosetta()
+        mo = Rosetta(rtip.internaltip.context.localized_strings)
         mo.acquire_storm_object(rtip.internaltip.context)
-        single_tip_sum["context_name"] = mo.dump_translated('name', language)
+        single_tip_sum["context_name"] = mo.dump_localized_attr('name', language)
 
         preview_data = []
 
-        fo = Fields(rtip.internaltip.context.localized_fields, rtip.internaltip.context.unique_fields)
-        for preview_key, preview_label in fo.get_preview_keys(language).iteritems():
-
-            # preview in a format angular.js likes
-            try:
-                entry = dict({'label' : preview_label,
-                              'text': rtip.internaltip.wb_fields[preview_key] })
-
-            except KeyError as xxx:
-                log.err("Legacy error: suppressed 'preview_keys' %s" % xxx.message )
-                continue
-
-            preview_data.append(entry)
+        for s in rtip.internaltip.wb_steps:
+            for f in s['children']:
+                if f['preview']:
+                    preview_data.append(f)
 
         single_tip_sum.update({ 'preview' : preview_data })
         rtip_summary_list.append(single_tip_sum)

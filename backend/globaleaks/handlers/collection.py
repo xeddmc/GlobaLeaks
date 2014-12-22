@@ -13,7 +13,7 @@ import StringIO
 
 from globaleaks.handlers.base import BaseHandler
 from globaleaks.handlers.files import download_all_files, serialize_receiver_file
-from globaleaks.handlers.authentication import transport_security_check, unauthenticated, authenticated
+from globaleaks.handlers.authentication import transport_security_check, authenticated
 from globaleaks.handlers import admin
 from globaleaks.rest import errors
 from globaleaks.settings import GLSetting, transact_ro
@@ -134,7 +134,8 @@ class CollectionDownload(BaseHandler):
         rtip_dict = yield get_rtip_info(rtip_id)
         collection_tip_dict = yield get_collection_info(rtip_id)
         context_dict = yield admin.get_context(rtip_dict['context_id'])
-        notif_dict = yield admin.get_notification()
+        steps_dict = yield admin.get_context_steps(context_dict['id'])
+        notif_dict = yield admin.notification.get_notification()
 
         mock_event = Event(
             type = u'zip_collection',
@@ -143,6 +144,7 @@ class CollectionDownload(BaseHandler):
             node_info = node_dict,
             receiver_info = receiver_dict,
             context_info = context_dict,
+            steps_info = steps_dict,
             plugin = None,
             trigger_info = collection_tip_dict,
             trigger_parent = rtip_dict

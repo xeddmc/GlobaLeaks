@@ -6,7 +6,7 @@ from globaleaks.tests import helpers
 
 from globaleaks.settings import transact, transact_ro
 from globaleaks.models import *
-from globaleaks.utils.structures import Fields
+from globaleaks.utils.utility import datetime_null
 
 class TestTransaction(helpers.TestGLWithPopulatedDB):
 
@@ -59,6 +59,8 @@ class TestTransaction(helpers.TestGLWithPopulatedDB):
         r = self.localization_set(self.dummyReceiver_1, Receiver, 'en')
         receiver_user = User(self.dummyReceiverUser_1)
         receiver_user.last_login = self.dummyReceiverUser_1['last_login']
+        receiver_user.password_change_needed = self.dummyReceiverUser_1['password_change_needed']
+        receiver_user.password_change_date = datetime_null()
 
         # Avoid receivers with the same username!
         receiver_user.username = unicode("xxx")
@@ -78,6 +80,8 @@ class TestTransaction(helpers.TestGLWithPopulatedDB):
         r = self.localization_set(self.dummyReceiver_1, Receiver, 'en')
         receiver_user = User(self.dummyReceiverUser_1)
         receiver_user.last_login = self.dummyReceiverUser_1['last_login']
+        receiver_user.password_change_needed = self.dummyReceiverUser_1['password_change_needed']
+        receiver_user.password_change_date = datetime_null()
         store.add(receiver_user)
 
         receiver = Receiver(r)
@@ -93,11 +97,6 @@ class TestTransaction(helpers.TestGLWithPopulatedDB):
         c = self.localization_set(self.dummyContext, Context, 'en')
         context = Context(c)
 
-        fo = Fields()
-        fo.update_fields('en', self.dummyContext['fields'])
-        fo.context_import(context)
-
-        context.tags = self.dummyContext['tags']
         context.submission_timetolive = context.tip_timetolive = 1000
         context.description = context.name = \
             context.submission_disclaimer = \

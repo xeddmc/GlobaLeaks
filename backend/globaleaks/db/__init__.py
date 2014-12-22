@@ -12,7 +12,10 @@ from storm.exceptions import OperationalError
 from globaleaks.utils.utility import log
 from globaleaks.settings import transact, transact_ro, ZStorm, GLSetting
 from globaleaks import models
-from globaleaks.db import updater_manager
+from globaleaks.db import updater_manager, base_updater
+
+base_updater.TableReplacer.testing = True
+
 from globaleaks.db.datainit import initialize_node, opportunistic_appdata_init
 
 def init_models():
@@ -35,36 +38,22 @@ def create_tables_transaction(store):
         for create_query in create_queries:
             try:
                 store.execute(create_query+';')
-            except OperationalError:
+            except OperationalError as exc:
                 log.err("OperationalError in [%s]" % create_query)
+                log.err(exc)
 
     init_models()
     # new is the only Models function executed without @transact, call .add, but
     # the called has to .commit and .close, operations commonly performed by decorator
 
-def acquire_email_templates(filename, fallback):
-
-    templ_f = os.path.join(GLSetting.static_db_source, filename)
-
-    if not os.path.isfile(templ_f):
-        return fallback
-
-    # else, load from the .txt files
-    with open( templ_f) as templfd:
-        template_text = templfd.read()
-        log.info("Loading %d bytes from template: %s" % (len(template_text), filename))
-        return template_text
-
 def create_tables(create_node=True):
     """
     Override transactor for testing.
     """
-    if GLSetting.db_type == 'sqlite' and os.path.exists(GLSetting.db_uri.replace('sqlite:', '').split('?')[0]):
-        # Here we instance every model so that __storm_table__ gets set via
-        # __new__
-        for model in models.models:
-            model()
-        return succeed(None)
+    if GLSetting.db_type == 'sqlite':
+        db_path = GLSetting.db_uri.replace('sqlite:', '').split('?', 1)[0]
+        if os.path.exists(db_path):
+            return succeed(None)
 
     deferred = create_tables_transaction()
     if create_node:
@@ -77,9 +66,10 @@ def create_tables(create_node=True):
             'presentation': dict({ GLSetting.memory_copy.default_language: u"" }),
             'footer': dict({ GLSetting.memory_copy.default_language: u"" }),
             'subtitle': dict({ GLSetting.memory_copy.default_language: u"" }),
-            'terms_and_conditions': dict({ GLSetting.memory_copy.default_language: u"" }),
             'security_awareness_title': dict({ GLSetting.memory_copy.default_language: u"" }),
             'security_awareness_text': dict({ GLSetting.memory_copy.default_language: u"" }),
+            'whistleblowing_question': dict({ GLSetting.memory_copy.default_language: u"" }),
+            'whistleblowing_button': dict({ GLSetting.memory_copy.default_language: u"" }),
             'hidden_service': u"",
             'public_site': u"",
             'email': u"",
@@ -96,10 +86,7 @@ def create_tables(create_node=True):
             'postpone_superpower' : False, # disabled by default
             'can_delete_submission' : False, # disabled too
             'ahmia' : False, # disabled too
-            'anomaly_checks' : False, # need to disabled in this stage as it need to be tuned
             'allow_unencrypted': GLSetting.memory_copy.allow_unencrypted,
-            'x_frame_options_mode': GLSetting.memory_copy.x_frame_options_mode,
-            'x_frame_options_allow_from': GLSetting.memory_copy.x_frame_options_allow_from,
             'exception_email' : GLSetting.defaults.exception_email,
             'default_language' : GLSetting.memory_copy.default_language,
             'default_timezone' : 0,
@@ -108,11 +95,13 @@ def create_tables(create_node=True):
             'disable_privacy_badge': False,
             'disable_security_awareness_badge': False,
             'disable_security_awareness_questions': False,
-
+            'enable_custom_privacy_badge': False,
+            'custom_privacy_badge_tbb': dict({ GLSetting.memory_copy.default_language: u"" }),
+            'custom_privacy_badge_tor': dict({ GLSetting.memory_copy.default_language: u"" }),
+            'custom_privacy_badge_none': dict({ GLSetting.memory_copy.default_language: u"" }),
         }
 
         appdata_dict = opportunistic_appdata_init()
-        # here is ok!
 
         # Initialize the node + notification table
         deferred.addCallback(initialize_node, only_node, appdata_dict)

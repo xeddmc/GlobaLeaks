@@ -15,8 +15,6 @@ hidden_service_regexp             = r'^http://[0-9a-z]{16}\.onion$'
 hidden_service_regexp_or_empty    = r'^http://[0-9a-z]{16}\.onion$$|^$'
 https_url_regexp                  = r'^https://([0-9a-z\-]+)\.(.*)$'
 https_url_regexp_or_empty         = r'^https://([0-9a-z\-]+)\.(.*)$|^$'
-x_frame_options_mode_regexp       = r'^(deny)|(allow-from)$'
-x_frame_options_allow_from_regexp = r'^(http(s?)://(\w+)\.(.*)$|^)?$'
 
 dateType = r'(.*)'
 
@@ -50,7 +48,7 @@ authDict = {
 }
 
 wbSubmissionDesc = {
-    'wb_fields' : dict,
+    'wb_steps' : list,
     'context_id' : uuid_regexp,
     'receivers' : [ uuid_regexp ],
     'files' : [ uuid_regexp ],
@@ -82,7 +80,13 @@ actorsCommentDesc = {
 actorsTipOpsDesc = {
     'global_delete' : bool,
     'extend': bool,
-    'is_pertinent': bool,
+}
+
+adminStepDesc = {
+    'label': unicode,
+    'hint': unicode,
+    'description': unicode,
+    'children': list
 }
 
 adminNodeDesc = {
@@ -91,9 +95,10 @@ adminNodeDesc = {
     'presentation' : unicode,
     'subtitle': unicode,
     'footer': unicode,
-    'terms_and_conditions': unicode,
     'security_awareness_title': unicode,
     'security_awareness_text': unicode,
+    'whistleblowing_question': unicode,
+    'whistleblowing_button': unicode,
     'hidden_service' : hidden_service_regexp_or_empty,
     'public_site' : https_url_regexp_or_empty,
     'stats_update_time' : int,
@@ -116,19 +121,18 @@ adminNodeDesc = {
     'reset_css': bool,
     'reset_homepage': bool,
     'ahmia': bool,
-    'anomaly_checks': bool,
     'allow_unencrypted': bool,
-    'x_frame_options_mode': x_frame_options_mode_regexp,
-    'x_frame_options_allow_from': x_frame_options_allow_from_regexp,
     'wizard_done': bool,
-    'receipt_regexp': unicode,
-    'terms_and_conditions': unicode,
     'disable_privacy_badge': bool,
     'disable_security_awareness_badge': bool,
     'disable_security_awareness_questions': bool,
     'configured': bool,
     'admin_language': unicode,
     'admin_timezone': int,
+    'enable_custom_privacy_badge': bool,
+    'custom_privacy_badge_tbb': unicode,
+    'custom_privacy_badge_tor': unicode,
+    'custom_privacy_badge_none': unicode,
 }
 
 adminNotificationDesc = {
@@ -139,6 +143,7 @@ adminNotificationDesc = {
     'password': unicode,
     'source_name' : unicode,
     'source_email' : email_regexp,
+    'admin_anomaly_template': unicode,
     'encrypted_tip_template': unicode,
     'encrypted_tip_mail_title': unicode,
     'plaintext_tip_template': unicode,
@@ -155,6 +160,8 @@ adminNotificationDesc = {
     'encrypted_message_mail_title': unicode,
     'plaintext_message_template': unicode,
     'plaintext_message_mail_title': unicode,
+    'pgp_expiration_alert': unicode,
+    'pgp_expiration_notice': unicode,
     'zip_description': unicode,
     'disable': bool,
 }
@@ -163,27 +170,27 @@ adminContextDesc = {
     'name': unicode,
     'description': unicode,
     'receiver_introduction': unicode,
-    'fields_introduction': unicode,
     'postpone_superpower': bool,
     'can_delete_submission': bool,
     'maximum_selectable_receivers': int,
-    'require_file_description': bool,
-    'delete_consensus_percentage': int,
-    'require_pgp': bool,
     'selectable_receiver': bool,
     'tip_max_access' : int,
     'tip_timetolive' : int,
     'file_max_download' : int,
-    'escalation_threshold' : int,
     'receivers' : [ uuid_regexp ],
-    'fields': [ formFieldsDict ],
-    'file_required': bool,
-    'tags' : [ unicode ],
+    'steps': [ adminStepDesc ],
     'select_all_receivers': bool,
     'show_small_cards': bool,
     'show_receivers': bool,
-    'enable_private_messages': bool, 
+    'enable_private_messages': bool,
     'presentation_order': int,
+    'steps': list
+}
+
+adminContextFieldTemplateCopy = {
+    'field_template_id': uuid_regexp,
+    'context_id': uuid_regexp,
+    'step_id': uuid_regexp,
 }
 
 adminReceiverDesc = {
@@ -192,10 +199,8 @@ adminReceiverDesc = {
     'name': unicode,
     'description': unicode,
     'contexts': [ uuid_regexp ],
-    'receiver_level': int,
     'can_delete_submission': bool,
     'postpone_superpower': bool,
-    'tags': [ unicode ],
     'tip_notification': bool,
     'file_notification': bool,
     'comment_notification': bool,
@@ -216,7 +221,6 @@ anonNodeDesc = {
     'subtitle': unicode,
     'description': unicode,
     'presentation': unicode,
-    'terms_and_conditions': unicode,
     'footer': unicode,
     'security_awareness_title': unicode,
     'security_awareness_text': unicode,
@@ -236,14 +240,17 @@ anonNodeDesc = {
     'postpone_superpower': bool,
     'can_delete_submission': bool,
     'ahmia': bool,
-    'anomaly_checks': bool,
     'allow_unencrypted': bool,
     'wizard_done': bool,
     'configured': bool,
-    'receipt_regexp': unicode,
     'disable_privacy_badge': bool,
     'disable_security_awareness_badge': bool,
-    'disable_security_awareness_questions': bool
+    'disable_security_awareness_questions': bool,
+    'enable_custom_privacy_badge': bool,
+    'custom_privacy_badge_tbb': unicode,
+    'custom_privacy_badge_tor': unicode,
+    'custom_privacy_badge_none': unicode,
+
 }
 
 TipOverview = {
@@ -259,7 +266,6 @@ TipOverview = {
     'comments': list,
     'wb_last_access': unicode,
     'expiration_date': dateType,
-    'pertinence_counter': int,
 }
 
 TipsOverview = [ TipOverview ]
@@ -305,21 +311,20 @@ AnomalyLine = {
 
 AnomaliesCollection = [ AnomalyLine ]
 
-nodeReceiver = { 
-    'update_date': unicode,
-    'receiver_level': int,
-    'name': unicode,
-    'tags': [ unicode ],
-    'contexts': [ uuid_regexp ],
-    'description': unicode,
-    'presentation_order': int,
-    'gpg_key_status': unicode,
-    'id': uuid_regexp,
-    'creation_date': dateType,
+nodeReceiver = {
+     'update_date': unicode,
+     'name': unicode,
+     'contexts': [ uuid_regexp ],
+     'description': unicode,
+     'presentation_order': int,
+     'gpg_key_status': unicode,
+     'id': uuid_regexp,
+     'creation_date': dateType,
 }
 
 nodeReceiverCollection = [ nodeReceiver ]
 
+# TODO - TO be removed when migration is complete
 field = {
     'incremental_number': int,
     'name': unicode,
@@ -336,7 +341,6 @@ nodeContext = {
     'select_all_receivers': bool,
     'name': unicode,
     'presentation_order': int,
-    'fields': [ field ],
     'description': unicode,
     'selectable_receiver': bool,
     'tip_timetolive': int,
@@ -346,13 +350,10 @@ nodeContext = {
     'show_receivers': bool,
     'enable_private_messages': bool,
     'file_max_download': int,
-    'require_pgp': bool,
     'tip_max_access': int,
-    'file_required': bool,
     'id': uuid_regexp,
     'receivers': [ uuid_regexp ],
     'submission_disclaimer': unicode,
-    'escalation_threshold': int,
 }
 
 nodeContextCollection = [ nodeContext ]
@@ -383,8 +384,7 @@ staticFileCollectionElem = {
 staticFileCollection = [ staticFileCollectionElem ]
 
 internalTipDesc = {
-    'wb_fields': dict,
-    'pertinence': int,
+    'wb_steps': list,
     'receivers': [ uuid_regexp ],
     'context_id': uuid_regexp,
     'access_limit': int,
@@ -394,28 +394,56 @@ internalTipDesc = {
     'files': [ uuid_regexp ],
     'expiration_date': dateType,
     'download_limit': int,
-    'escalation_threshold': int,
 }
 
-wizardFieldDesc = {
-    'incremental_number': int,
-    'localized_name': dict,
-    'localized_hint': dict,
-    'type': unicode,
-    'trigger': list,
-    'defined_options': list, # can be None, I don't remember if can be other ?
+# TODO if the admin has visibility to different variables compared to the WB
+# if its so, rename to FieldDesc (generic)
+
+FieldDescFromTemplate = {
+    'template_id': uuid_regexp,
+    'step_id': uuid_regexp
+}
+
+FieldDesc = {
+    'label': unicode,
+    'description': unicode,
+    'hint': unicode,
+    'multi_entry': bool,
+    'x': int,
+    'y': int,
+    'required': bool,
+    'preview': bool,
+    'stats_enabled': bool,
+    'type': (r'^('
+             'inputbox|'
+             'textarea|'
+             'selectbox|'
+             'checkbox|'
+             'modal|'
+             'dialog|'
+             'tos|'
+             'fileupload|'
+             'fieldgroup)$'),
+    'options': list,
+    'children': list,
+}
+
+wizardStepDesc = {
+    'label': dict,
+    'hint': dict,
+    'description': dict,
+    'children': list,
 }
 
 wizardNodeDesc = {
     'presentation': dict,
     'footer': dict,
     'subtitle': dict,
-    'terms_and_conditions': dict,
 }
 
-wizardFieldUpdate = {
+wizardAppdataDesc = {
     'version': int,
-    'fields': [ wizardFieldDesc ],
+    'fields': [ wizardStepDesc ],
     'node': wizardNodeDesc,
 }
 
@@ -423,5 +451,5 @@ wizardFirstSetup = {
     'receiver' : adminReceiverDesc,
     'context' : adminContextDesc,
     'node' : adminNodeDesc,
-    'appdata' : wizardFieldUpdate,
+    'appdata' : wizardAppdataDesc,
 }

@@ -1,39 +1,36 @@
 # -*- encoding: utf-8 -*-
-#
-#  base
-#  ****
-#
-# Implementation of BaseHandler, the Cyclone class RequestHandler extended with our
-# needings.
-#
+"""
+Implementation of BaseHandler, the Cyclone class RequestHandler extended with
+our needs.
+"""
 
-import httplib
-import types
 import collections
+import httplib
 import json
+import logging
 import re
 import sys
-import logging
+import types
 
-from StringIO import StringIO
 from cgi import parse_header
 from cryptography.hazmat.primitives.constant_time import bytes_eq
+from StringIO import StringIO
 
-from twisted.python.failure import Failure
-from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.internet import fdesc
+from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.python.failure import Failure
 
-from cyclone.web import RequestHandler, HTTPError, HTTPAuthenticationRequired, StaticFileHandler, RedirectHandler
-from cyclone.httpserver import HTTPConnection, HTTPRequest, _BadRequestException
 from cyclone import escape, httputil
 from cyclone.escape import native_str, parse_qs_bytes
+from cyclone.httpserver import HTTPConnection, HTTPRequest, _BadRequestException
+from cyclone.web import RequestHandler, HTTPError, HTTPAuthenticationRequired, StaticFileHandler, RedirectHandler
 
-from globaleaks.jobs.statistics_sched import alarm_level
+from globaleaks.anomaly import incoming_event_monitored, outcome_event_monitored, EventTrack
+from globaleaks.rest import errors
+from globaleaks.settings import GLSetting
+from globaleaks.security import GLSecureTemporaryFile
 from globaleaks.utils.utility import log, log_remove_escapes, log_encode_html, datetime_now, deferred_sleep
 from globaleaks.utils.mailutils import mail_exception
-from globaleaks.settings import GLSetting
-from globaleaks.rest import errors
-from globaleaks.security import GLSecureTemporaryFile
 
 def validate_host(host_key):
     """
@@ -42,7 +39,7 @@ def validate_host(host_key):
     Is used by all the Web handlers inherit from Cyclone
     """
     # hidden service has not a :port
-    if len(host_key) == 22 and host_key[16:22] == '.onion':
+    if len(host_key) == 22 and host_key.endswith('.onion'):
         return True
 
     # strip eventually port
@@ -102,7 +99,10 @@ class GLHTTPServer(HTTPConnection):
                 connection=self, method=method, uri=uri, version=version,
                 headers=headers, remote_ip=self._remote_ip)
 
-            self.content_length = int(headers.get("Content-Length", 0))
+            try:
+                self.content_length = int(headers.get("Content-Length", 0))
+            except ValueError:
+                raise _BadRequestException("Malformed Content-Length header")
 
             # we always use secure temporary files in case of large json or file uploads
             if self.content_length < 100000 and self._request.headers.get("Content-Disposition") is None:
@@ -223,11 +223,9 @@ class BaseHandler(RequestHandler):
         # to avoid Robots spidering, indexing, caching
         self.set_header("X-Robots-Tag", "noindex")
 
-        # to mitigate clickjaking attacks on iframes
-        if GLSetting.memory_copy.x_frame_options_mode == 'deny':
-            self.set_header("X-Frame-Options", "deny")
-        else:
-            self.set_header("X-Frame-Options", "allow-from: " + GLSetting.memory_copy.x_frame_options_allow_from)
+        # to mitigate clickjaking attacks on iframes allwing only same origin
+        # same origin is needed in order to include svg and other html <object>
+        self.set_header("X-Frame-Options", "sameorigin")
 
         lang = self.request.headers.get('GL-Language', None)
 
@@ -369,7 +367,7 @@ class BaseHandler(RequestHandler):
 
         else:
             raise errors.InvalidInputFormat("invalid json massage: expected dict or list")
-            
+
 
     @staticmethod
     def validate_message(message, message_template):
@@ -457,6 +455,22 @@ class BaseHandler(RequestHandler):
         It's here implemented to supports the I/O logging if requested
         with the command line options --io $number_of_request_recorded
         """
+
+        # This is the event tracker, used to keep track of the
+        # outcome of the events.
+        if not hasattr(self, '_status_code'):
+            log.debug("Developer, check this out")
+            if GLSetting.devel_mode:
+                import pdb; pdb.set_trace()
+
+        for event in outcome_event_monitored:
+            if event['handler_check'](self.request.uri) and \
+                    event['method'] == self.request.method and \
+                    event['status_checker'](self._status_code):
+                EventTrack(event, self.request.request_time())
+                # if event['anomaly_management']:
+                #    event['anomaly_management'](self.request)
+
         if hasattr(self, 'globaleaks_io_debug'):
             try:
                 content = ("<" * 15)
@@ -540,16 +554,7 @@ class BaseHandler(RequestHandler):
         needed_diff = uniform_delay - request_time
 
         if needed_diff > 0:
-            #print "uniform delay of %.2fms to reach %.2fms" % (
-            #    (1000.0 * needed_diff),
-            #    (1000.0 * uniform_delay)
-            #)
             yield deferred_sleep(needed_diff)
-        else:
-            #print "uniform delay of %.2fms it's more than %.2fms" % (
-            #    (1000.0 * request_time ), (1000.0 * uniform_delay)
-            #)
-            pass
 
     @property
     def current_user(self):
@@ -648,59 +653,6 @@ class BaseRedirectHandler(BaseHandler, RedirectHandler):
         if not validate_host(self.request.host):
             raise errors.InvalidHostSpecified
 
-def anomaly_check(element):
-    """
-    @param element: one of the events with threshold
-
-    if anomaly_checks are disabled the decorator simply returns
-    """
-
-    def wrapper(method_handler):
-        def call_handler(cls, *args, **kw):
-
-            # if anomaly_checks are disabled the decorator simply returns
-            if not GLSetting.memory_copy.anomaly_checks:
-                return method_handler(cls, *args, **kw)
-
-            if GLSetting.anomalies_counter[element] > alarm_level[element]:
-
-                if element == 'new_submission':
-                    log.debug("Blocked a New Submission (%d > %d)" % (
-                        GLSetting.anomalies_counter[element],
-                        alarm_level[element]
-                    ))
-                    raise errors.SubmissionFlood(30)
-                elif element == 'finalized_submission':
-                    log.debug("Blocked a Finalized Submission (%d > %d)" % (
-                        GLSetting.anomalies_counter[element],
-                        alarm_level[element]
-                    ))
-                    raise errors.SubmissionFlood(30)
-                elif element == 'anon_requests':
-                    log.debug("Blocked an Anon Request (%d > %d)" % (
-                        GLSetting.anomalies_counter[element],
-                        alarm_level[element]
-                    ))
-                    raise errors.FloodException(30)
-                elif element == 'file_uploaded':
-                    log.debug("Blocked a File upload (%d > %d)" % (
-                        GLSetting.anomalies_counter[element],
-                        alarm_level[element]
-                    ))
-                    raise errors.FileUploadFlood(30)
-                else:
-                    log.debug("Blocked an Unknown event (=%s) !? [BUG!] (%d > %d)" % (
-                        element,
-                        GLSetting.anomalies_counter[element],
-                        alarm_level[element]
-                    ))
-                    raise errors.FloodException(30)
-
-            return method_handler(cls, *args, **kw)
-        return call_handler
-
-    return wrapper
-
 class GLApiCache:
 
     memory_cache_dict = {}
@@ -743,3 +695,4 @@ class GLApiCache:
             cls.memory_cache_dict = {}
         else:
             cls.memory_cache_dict.pop(resource_name, None)
+

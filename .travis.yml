@@ -8,7 +8,7 @@ install:
   - sudo apt-get install tor tor-geoipdb nodejs
   - cd $TRAVIS_BUILD_DIR/backend  # to install backend dependencies
   - pip install -r requirements.txt
-  - pip install coverage coveralls
+  - pip install coverage coveralls pep8
   - cd $TRAVIS_BUILD_DIR/client  # to install frontend dependencies
   - npm install -g grunt grunt-cli bower
   - npm install
@@ -17,7 +17,9 @@ script:
   - cd $TRAVIS_BUILD_DIR/backend  # to run backend tests
   - coverage run setup.py test
   - coveralls || true
-  - cd $TRAVIS_BUILD_DIR/client  # to run frontend tests
-  - bower install && grunt build
+  - cd $TRAVIS_BUILD_DIR/client  # to test backend handlers
+  - bower install && grunt build --resource master
   - $TRAVIS_BUILD_DIR/backend/bin/globaleaks -z
   - node_modules/mocha/bin/mocha -R list tests/glbackend/test_00*
+  - cd $TRAVIS_BUILD_DIR/  # to run static analysis
+  - ./scripts/travis/lint.sh

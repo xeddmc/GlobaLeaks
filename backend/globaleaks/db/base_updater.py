@@ -6,8 +6,8 @@ from storm.exceptions import OperationalError
 from storm.locals import create_database, Store
 from storm.properties import PropertyColumn
 from storm.variables import BoolVariable, DateTimeVariable
-from storm.variables import EnumVariable, IntVariable, RawStrVariable
-from storm.variables import UnicodeVariable, JSONVariable, PickleVariable
+from storm.variables import EnumVariable, IntVariable, RawStrVariable, PickleVariable
+from storm.variables import UnicodeVariable, JSONVariable
 
 from globaleaks import DATABASE_VERSION, models
 from globaleaks.settings import GLSetting
@@ -57,6 +57,7 @@ def variableToSQL(var, db_type):
 
     return "%s" % data_mapping[db_type]
 
+
 def varsToParametersSQL(variables, primary_keys, db_type):
     """
     Takes as input a list of variables (convered to SQLite syntax and in the
@@ -82,6 +83,7 @@ def varsToParametersSQL(variables, primary_keys, db_type):
         params += "%s %s)" % variables[-1]
     return params
 
+
 def generateCreateQuery(model):
     """
     This takes as input a Storm model and outputs the creation query for it.
@@ -92,7 +94,7 @@ def generateCreateQuery(model):
     else:
         table_name = model.__storm_table__
 
-    query = "CREATE TABLE "+ table_name + " "
+    query = "CREATE TABLE " + table_name + " "
 
     variables = []
     primary_keys = []
@@ -129,7 +131,9 @@ class TableReplacer:
         from globaleaks.db.update_11_12 import Node_version_11, ApplicationData_version_11, Context_version_11
         from globaleaks.db.update_12_13 import Node_version_12, Context_version_12
         from globaleaks.db.update_13_14 import Node_version_13, Context_version_13
-        from globaleaks.db.update_14_15 import Node_version_14, User_version_14
+        from globaleaks.db.update_14_15 import Node_version_14, User_version_14, Context_version_14, Receiver_version_14, \
+            InternalTip_version_14, Notification_version_14, Stats_version_14, ApplicationData_version_14, \
+            Comment_version_14
 
         self.old_db_file = old_db_file
         self.new_db_file = new_db_file
@@ -141,20 +145,20 @@ class TableReplacer:
         self.table_history = {
             'Node' : [ Node_version_5, Node_version_6, Node_version_7, Node_version_9, None, Node_version_11, None, Node_version_12, Node_version_13, Node_version_14, models.Node],
             'User' : [ User_version_5, User_version_9, None, None, None, User_version_14, None, None, None, None, models.User],
-            'Context' : [ Context_version_6, None, Context_version_7, Context_version_8, Context_version_11, None, None, Context_version_12, Context_version_13, models.Context, None],
-            'Receiver': [ Receiver_version_7, None, None, Receiver_version_8, Receiver_version_9, models.Receiver, None, None, None, None, None],
+            'Context' : [ Context_version_6, None, Context_version_7, Context_version_8, Context_version_11, None, None, Context_version_12, Context_version_13, Context_version_14, models.Context],
+            'Receiver': [ Receiver_version_7, None, None, Receiver_version_8, Receiver_version_9, Receiver_version_14, None, None, None, None, models.Receiver],
             'ReceiverFile' : [ models.ReceiverFile, None, None, None, None, None, None, None, None, None, None],
-            'Notification': [ Notification_version_7, None, None, Notification_version_8, models.Notification, None, None, None, None, None, None],
-            'Comment': [ Comment_version_5, models.Comment, None, None, None, None, None, None, None, None, None],
-            'InternalTip' : [ InternalTip_version_10, None, None, None, None, None, models.InternalTip, None, None, None, None],
+            'Notification': [ Notification_version_7, None, None, Notification_version_8, Notification_version_14, None, None, None, None, None, models.Notification],
+            'Comment': [ Comment_version_5, Comment_version_14, None, None, None, None, None, None, None, None, models.Comment],
+            'InternalTip' : [ InternalTip_version_10, None, None, None, None, None, InternalTip_version_14, None, None, None, models.InternalTip],
             'InternalFile' : [ InternalFile_version_7, None, None, InternalFile_version_10, None, None, models.InternalFile, None, None, None, None],
             'WhistleblowerTip' : [ models.WhistleblowerTip, None, None, None, None, None, None, None, None, None, None],
             'ReceiverTip' : [ models.ReceiverTip, None, None, None, None, None, None , None, None, None, None],
             'ReceiverInternalTip' : [ models.ReceiverInternalTip, None, None, None, None, None, None, None, None, None, None],
             'ReceiverContext' : [ models.ReceiverContext, None, None, None, None, None, None, None, None, None, None],
             'Message' : [ models.Message, None, None, None, None, None, None, None, None, None, None],
-            'Stats' : [models.Stats, None, None, None, None, None, None, None, None, None, None],
-            'ApplicationData' : [ApplicationData_version_10, None, None, None, None, None, None, models.ApplicationData, None, None, None],
+            'Stats' : [Stats_version_14, None, None, None, None, None, None, None, None, None, models.Stats],
+            'ApplicationData' : [ApplicationData_version_10, None, None, None, None, None, None, ApplicationData_version_14, None, None, models.ApplicationData],
         }
 
         for k, v in self.table_history.iteritems():
@@ -187,7 +191,7 @@ class TableReplacer:
                     try:
                         self.store_new.execute(create_query+';')
                     except OperationalError as e:
-                        log.warn('OperationalError in "{}": e'.format(create_query))
+                        log.msg('OperationalError in "{}": e'.format(create_query))
             self.store_new.commit()
             return
             # return here and manage the migrant versions here:
@@ -202,7 +206,7 @@ class TableReplacer:
             try:
                 self.store_new.execute(create_query+';')
             except OperationalError as excep:
-                log.warn('{} OperationalError in [{}]'.format(self.debug_info, create_query))
+                log.msg('{} OperationalError in [{}]'.format(self.debug_info, create_query))
                 raise excep
 
         self.store_new.commit()
@@ -348,9 +352,9 @@ class TableReplacer:
 
     def migrate_Stats(self):
         """
-        has been created between 9 and 10!
+        has been created between 14 and 15!
         """
-        if self.start_ver < 10:
+        if self.start_ver < 15:
             return
 
         self._perform_copy_list("Stats")
@@ -363,3 +367,39 @@ class TableReplacer:
             return
 
         self._perform_copy_list("ApplicationData")
+
+    def migrate_Field(self):
+        """
+        has been created between 14 and 15!
+        """
+        if self.start_ver < 15:
+            return
+
+        self._perform_copy_list("Field")
+
+    def migrate_FieldField(self):
+        """
+        has been created between 14 and 15!
+        """
+        if self.start_ver < 15:
+            return
+
+        self._perform_copy_list("FieldField")
+
+    def migrate_Step(self):
+        """
+        has been created between 14 and 15!
+        """
+        if self.start_ver < 15:
+            return
+
+        self._perform_copy_list("Step")
+
+    def migrate_Anomalies(self):
+        """
+        has been created between 14 and 15!
+        """
+        if self.start_ver < 15:
+            return
+
+        self._perform_copy_list("Anomalies")

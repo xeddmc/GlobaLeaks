@@ -170,10 +170,10 @@ def do_safexport(dbfile, export_print):
     for itip in itips:
         copy_itip = do_storm_copy(itip)
 
-        # wb_fields need to be cleared with spare unicode, if sets
-        for k, v in itip.wb_fields.iteritems():
-            if isinstance(copy_itip.wb_fields[k], unicode):
-                copy_itip.wb_fields[k] = u'¹_clæred_²_data_³'
+        # wb_steps need to be cleared with spare unicode, if sets
+        for k, v in itip.wb_steps.iteritems():
+            if isinstance(copy_itip.wb_steps[k], unicode):
+                copy_itip.wb_steps[k] = u'¹_clæred_²_data_³'
         # the key are UUIDv4 too, but are not changed ATM
 
         copy_itip.id = _change_tracking_uuid(itip.id)
@@ -296,8 +296,8 @@ elif sys.argv[1] == 'restore' and len(sys.argv)== 4:
     print "restore do not yet implemented"
     pass
 else:
-    print "wrong usabe of %s command (missing option or bad keyword)" % sys.argv[1]
-    print "Run %s without argument can trigger the help" % sys.argv[1]
+    print "Wrong usage of %s command (missing option or bad keyword)" % sys.argv[0]
+    print "Run %s without arguments to trigger the help" % sys.argv[0]
     if not randint(20, 50) % 42:
         print "\n fnord"
     quit()
