@@ -5,7 +5,7 @@ set -e
 # XXX. Hardcore installation of globaleaks dependencies using pip.
 # Please remove the following lines once up-to-date python-storm,
 # python-cryptography, and python-pip will be available in debian.
-CHECK_PIP_VERSION = "
+CHECK_PIP_VERSION="
 import pip
 from pkg_resources import parse_version as v
 exit(v(pip.__version__) < v('1.3'))
