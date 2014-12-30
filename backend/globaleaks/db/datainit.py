@@ -51,7 +51,7 @@ def opportunistic_appdata_init():
 
 
 @transact
-def initialize_node(store, results, only_node, appdata):
+def initialize_node(store, result, only_node, appdata):
     """
     TODO refactor with languages the email_template, develop a dedicated
     function outside the node, and inquire fucking YHWH about the
@@ -129,8 +129,7 @@ def initialize_node(store, results, only_node, appdata):
 
     store.add(notification)
 
-@transact_ro
-def import_memory_variables(store):
+def db_import_memory_variables(store):
     """
     to get fast checks, import (same) of the Node variable in GLSetting,
     this function is called every time that Node is updated.
@@ -168,6 +167,10 @@ def import_memory_variables(store):
     except Exception as e:
         raise errors.InvalidInputFormat("Cannot import memory variables: %s" % e)
 
+@transact_ro
+def import_memory_variables(*args):
+    return db_import_memory_variables(*args)
+
 @transact
 def apply_cli_options(store):
     """
@@ -179,7 +182,7 @@ def apply_cli_options(store):
 
     verb = "Hardwriting"
     accepted = {}
-    if GLSetting.unchecked_tor_input.has_key('hostname_tor_content'):
+    if 'hostname_tor_content' in GLSetting.unchecked_tor_input:
         composed_hs_url = 'http://%s' % GLSetting.unchecked_tor_input['hostname_tor_content']
         composed_t2w_url = 'https://%s.tor2web.org' % GLSetting.unchecked_tor_input['hostname_tor_content']
 
