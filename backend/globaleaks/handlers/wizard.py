@@ -5,22 +5,21 @@
 #
 # This interface is used to fill the Node defaults whenever they are updated
 
-from globaleaks.db.datainit import import_memory_variables
 from globaleaks.handlers.base import BaseHandler, GLApiCache
 from globaleaks.handlers.authentication import authenticated, transport_security_check
 from globaleaks.handlers.admin import db_create_context, db_create_receiver, db_update_node, \
                                       anon_serialize_node, get_public_context_list, get_public_receiver_list
 
-from globaleaks.models import *
-from globaleaks.rest import errors, requests
-from globaleaks.settings import transact, transact_ro, GLSetting
+from globaleaks.models import ApplicationData, Node
+from globaleaks.rest import requests
+from globaleaks.settings import transact, transact_ro
 from globaleaks.utils.utility import log
 
 from twisted.internet.defer import inlineCallbacks
 
 
 @transact_ro
-def admin_serialize_appdata(store, language=GLSetting.memory_copy.default_language):
+def admin_serialize_appdata(store):
 
     appdata = store.find(ApplicationData).one()
 
@@ -80,7 +79,7 @@ def admin_update_appdata(store, loaded_appdata):
     }
 
 @transact
-def wizard(store, request, language=GLSetting.memory_copy.default_language):
+def wizard(store, request, language):
 
     node = request['node']
     context = request['context']
@@ -125,9 +124,9 @@ class AppdataCollection(BaseHandler):
     @transport_security_check('admin')
     @authenticated('admin')
     @inlineCallbacks
-    def get(self, *uriargs):
+    def get(self):
 
-        app_fields_dump = yield admin_serialize_appdata(self.request.language)
+        app_fields_dump = yield admin_serialize_appdata()
 
         self.set_status(200)
         self.finish(app_fields_dump)
@@ -135,7 +134,7 @@ class AppdataCollection(BaseHandler):
     @transport_security_check('admin')
     @authenticated('admin')
     @inlineCallbacks
-    def post(self, *uriargs):
+    def post(self):
 
         request = self.validate_message(self.request.body,
                 requests.wizardAppdataDesc)
@@ -153,7 +152,7 @@ class FirstSetup(BaseHandler):
     @transport_security_check('admin')
     @authenticated('admin')
     @inlineCallbacks
-    def post(self, *uriargs):
+    def post(self):
         """
         """
 
@@ -161,9 +160,6 @@ class FirstSetup(BaseHandler):
                 requests.wizardFirstSetup)
 
         yield wizard(request, self.request.language)
-
-        # align the memory variables with the new updated data
-        yield import_memory_variables()
 
         # cache must be updated in particular to set wizard_done = True
         public_node_desc = yield anon_serialize_node(self.request.language)

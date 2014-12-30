@@ -78,7 +78,6 @@ def update_session(user):
             True if the session is active and update the session
                 via utils/tempobj.TempObj.touch()
     """
-
     session_obj = GLSetting.sessions.get(user.id, None)
 
     if not session_obj:
@@ -176,7 +175,7 @@ def transport_security_check(wrapped_handler_role):
 
             are_we_tor2web = get_tor2web_header(cls.request.headers)
 
-            if are_we_tor2web and accept_tor2web(wrapped_handler_role) == False:
+            if are_we_tor2web and not accept_tor2web(wrapped_handler_role):
                 log.err("Denied request on Tor2web for role %s and resource '%s'" %
                     (wrapped_handler_role, cls.request.uri) )
                 raise errors.TorNetworkRequired
@@ -201,7 +200,7 @@ def login_wb(store, receipt):
         hashed_receipt = security.hash_password(receipt, node.receipt_salt)
         wb_tip = store.find(WhistleblowerTip,
                             WhistleblowerTip.receipt_hash == unicode(hashed_receipt)).one()
-    except NotOneError, e:
+    except NotOneError:
         # This is one of the fatal error that never need to happen
         log.err("Expected unique fields (receipt) not unique when hashed %s" % receipt)
         return False
@@ -282,11 +281,9 @@ class AuthenticationHandler(BaseHandler):
 
     @authenticated('*')
     def get(self):
-        if self.current_user:
-            try:
-                session = GLSetting.sessions[self.current_user.id]
-            except KeyError:
-                raise errors.NotAuthenticated
+        if self.current_user and \
+                self.current_user.id not in GLSetting.sessions:
+            raise errors.NotAuthenticated
 
         auth_answer = {
             'session_id': self.current_user.id,
@@ -315,14 +312,14 @@ class AuthenticationHandler(BaseHandler):
             yield utility.deferred_sleep(delay)
 
         if role not in ['admin', 'wb', 'receiver']:
-           raise errors.InvalidInputFormat("Authentication role %s" % str(role) )
+            raise errors.InvalidInputFormat("Authentication role %s" % str(role) )
 
         if get_tor2web_header(self.request.headers):
             if not accept_tor2web(role):
                 log.err("Denied login request on Tor2web for role '%s'" % role)
                 raise errors.TorNetworkRequired
             else:
-               log.debug("Accepted login request on Tor2web for role '%s'" % role)
+                log.debug("Accepted login request on Tor2web for role '%s'" % role)
 
         # Then verify credential, if the channel shall be trusted
         #
@@ -404,4 +401,3 @@ class AuthenticationHandler(BaseHandler):
 
         self.set_status(200)
         self.finish()
-

@@ -18,8 +18,7 @@ from globaleaks.handlers.authentication import transport_security_check, \
 from globaleaks.jobs.statistics_sched import StatisticsSchedule
 from globaleaks.models import Stats, Anomalies
 from globaleaks.utils.utility import datetime_to_ISO8601, datetime_now, log
-from globaleaks.anomaly import EventTrackQueue, outcome_event_monitored, \
-    pollute_Event_for_testing
+from globaleaks.anomaly import EventTrackQueue, outcome_event_monitored
 
 
 @transact_ro
@@ -125,7 +124,6 @@ def delete_weekstats_history(store):
 
 @transact_ro
 def get_anomaly_history(store, limit):
-
     anomal = store.find(Anomalies)
     anomal.order_by(Desc(Anomalies.creation_date))
 
@@ -183,7 +181,7 @@ class AnomaliesCollection(BaseHandler):
 
     @transport_security_check("admin")
     @authenticated("admin")
-    def get(self, *uriargs):
+    def get(self):
         """
         Anomalies history is track in Alarm, but is also stored in the
         DB in order to provide a good history.
@@ -192,23 +190,20 @@ class AnomaliesCollection(BaseHandler):
 
 
 class AnomalyHistoryCollection(BaseHandler):
-
     @transport_security_check("admin")
     @authenticated("admin")
     @inlineCallbacks
-    def get(self, *uriargs):
-
+    def get(self):
         anomaly_history = yield get_anomaly_history(limit=20)
         self.finish(anomaly_history)
 
     @transport_security_check("admin")
     @authenticated("admin")
     @inlineCallbacks
-    def delete(self, *uriargs):
-
+    def delete(self):
         log.info("Received anomalies history delete command")
         yield delete_anomaly_history()
-        self.set_status(200)
+        self.finish([])
 
 
 class StatsCollection(BaseHandler):
@@ -222,7 +217,6 @@ class StatsCollection(BaseHandler):
     @authenticated("admin")
     @inlineCallbacks
     def get(self, weeks_in_the_past):
-
         proper_delta = (int(weeks_in_the_past) * -1)
         if proper_delta:
             log.debug("Asking statistics for %d weeks ago" % proper_delta)
@@ -235,11 +229,10 @@ class StatsCollection(BaseHandler):
     @transport_security_check("admin")
     @authenticated("admin")
     @inlineCallbacks
-    def delete(self, *uriargs):
-
+    def delete(self):
         log.info("Received statistic history delete command")
         yield delete_weekstats_history()
-        self.set_status(200)
+        self.finish([])
 
 
 class RecentEventsCollection(BaseHandler):
@@ -268,7 +261,6 @@ class RecentEventsCollection(BaseHandler):
         )
 
     def get_summary(self, templist):
-
         eventmap = dict()
         for event in outcome_event_monitored:
             eventmap.setdefault(event['name'], 0)
@@ -280,8 +272,7 @@ class RecentEventsCollection(BaseHandler):
 
     @transport_security_check("admin")
     @authenticated("admin")
-    def get(self, kind, *uriargs):
-
+    def get(self, kind):
         if kind not in ['details', 'summary']:
             raise errors.InvalidInputFormat(kind)
 
