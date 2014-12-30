@@ -14,12 +14,12 @@ from globaleaks.handlers.authentication import transport_security_check, authent
 from globaleaks.rest import requests
 from globaleaks.utils.utility import log, datetime_now, datetime_to_ISO8601, datetime_to_pretty_str
 from globaleaks.utils.structures import Rosetta
-from globaleaks.settings import transact, transact_ro, GLSetting
+from globaleaks.settings import transact, transact_ro
 from globaleaks.models import WhistleblowerTip, Comment, Message, ReceiverTip
 from globaleaks.rest import errors
 
 
-def wb_serialize_tip(internaltip, language=GLSetting.memory_copy.default_language):
+def wb_serialize_tip(internaltip, language):
     ret_dict = {
         'context_id': internaltip.context.id,
         'creation_date' : datetime_to_ISO8601(internaltip.creation_date),
@@ -68,7 +68,7 @@ def get_files_wb(store, wb_tip_id):
 
 
 @transact
-def get_internaltip_wb(store, tip_id, language=GLSetting.memory_copy.default_language):
+def get_internaltip_wb(store, tip_id, language):
     wbtip = store.find(WhistleblowerTip, WhistleblowerTip.id == unicode(tip_id)).one()
 
     if not wbtip:
@@ -108,7 +108,7 @@ class WBTipInstance(BaseHandler):
         contain the internaltip)
         """
 
-        answer = yield get_internaltip_wb(self.current_user.user_id, self.request.language)
+        answer = yield get_internaltip_wb(self.current_user.user_id, 'en')
         answer['files'] = yield get_files_wb(self.current_user.user_id)
 
         self.set_status(200)
@@ -174,7 +174,7 @@ class WBTipCommentCollection(BaseHandler):
     @transport_security_check('wb')
     @authenticated('wb')
     @inlineCallbacks
-    def get(self, *uriargs):
+    def get(self):
         """
         Parameters: None
         Response: actorsCommentList
@@ -188,7 +188,7 @@ class WBTipCommentCollection(BaseHandler):
     @transport_security_check('wb')
     @authenticated('wb')
     @inlineCallbacks
-    def post(self, *uriargs):
+    def post(self):
         """
         Request: actorsCommentDesc
         Response: actorsCommentDesc
@@ -203,7 +203,7 @@ class WBTipCommentCollection(BaseHandler):
 
 
 @transact_ro
-def get_receiver_list_wb(store, wb_tip_id, language=GLSetting.memory_copy.default_language):
+def get_receiver_list_wb(store, wb_tip_id, language):
     """
     @return:
         This function contain the serialization of the receiver, this function is

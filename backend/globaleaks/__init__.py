@@ -8,7 +8,7 @@ import operator
 __author__ = u'Random GlobaLeaks Developers'
 __copyright__ = u'Hermes Center for Transparency and Digital Human Rights.'
 __email__ = u'info@globaleaks.org'
-__version__ = u'2.60.44'
+__version__ = u'2.60.45'
 
 DATABASE_VERSION = 15
 
@@ -16,7 +16,6 @@ DATABASE_VERSION = 15
 # copy paste format from 'grunt updateTranslations'
 LANGUAGES_SUPPORTED = [
  { "code": "ar", "name": "Arabic" },
- { "code": "bg", "name": "Bulgarian" },
  { "code": "ca", "name": "Catalan" },
  { "code": "cs", "name": "Czech" },
  { "code": "de", "name": "German" },
@@ -24,6 +23,7 @@ LANGUAGES_SUPPORTED = [
  { "code": "en", "name": "English" },
  { "code": "es", "name": "Spanish" },
  { "code": "fr", "name": "French" },
+ { "code": "he", "name": "Hebrew" },
  { "code": "hr_HR", "name": "Croatian (Croatia)" },
  { "code": "hu_HU", "name": "Hungarian (Hungary)" },
  { "code": "it", "name": "Italian" },
