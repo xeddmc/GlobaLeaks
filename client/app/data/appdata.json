@@ -45,7 +45,7 @@
         },
         {
           "label": { "en": "Full description" },
-          "type": "inputbox",
+          "type": "textarea",
           "preview": false,
           "description": {"en": "Describe the details of the submission"},
           "hint": {"en": ""},
@@ -98,7 +98,7 @@
           "preview": false,
           "description": {"en": ""},
           "hint": {"en": ""},
-          "multi_entry": true,
+          "multi_entry": false,
           "stats_enabled": false,
           "required": true,
           "children": [],
