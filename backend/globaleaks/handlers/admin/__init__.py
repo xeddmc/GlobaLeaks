@@ -17,7 +17,7 @@ from globaleaks.handlers.authentication import authenticated, transport_security
 from globaleaks.handlers.base import BaseHandler, GLApiCache
 from globaleaks.handlers.admin.field import disassociate_field, get_field_association
 from globaleaks.handlers.node import get_public_context_list, get_public_receiver_list, \
-    anon_serialize_node, anon_serialize_step, anon_serialize_field
+    anon_serialize_node, anon_serialize_step
 from globaleaks import models
 from globaleaks.rest import errors, requests
 from globaleaks.security import gpg_options_parse
@@ -173,8 +173,8 @@ def db_update_steps(store, context_id, steps, language):
 
         n += 1
 
-    for o in indexed_old_steps:
-        store.remove(indexed_old_steps[o.id])
+    for o_id in indexed_old_steps:
+        store.remove(indexed_old_steps[o_id])
 
     for n in new_steps:
         store.add(n)
@@ -188,7 +188,7 @@ def admin_serialize_context(store, context, language):
         "id": context.id,
         "creation_date": datetime_to_ISO8601(context.creation_date),
         "last_update": datetime_to_ISO8601(context.last_update),
-	"selectable_receiver": context.selectable_receiver,
+        "selectable_receiver": context.selectable_receiver,
         "tip_max_access": context.tip_max_access,
         "file_max_download": context.file_max_download,
         "receivers": [r.id for r in context.receivers],
@@ -505,15 +505,6 @@ def get_context(store, context_id, language):
 
     return admin_serialize_context(store, context, language)
 
-def db_get_fields_recursively(store, field, language):
-    ret = []
-    for children in field.children:
-        s = anon_serialize_field(store, children, language)
-        ret.append(s)
-        ret += db_get_fields_recursively(store, children, language)
-
-    return ret
-
 def db_get_context_steps(store, context_id, language):
     """
     Returns:
@@ -552,7 +543,7 @@ def update_context(store, context_id, request, language):
     context = store.find(models.Context, models.Context.id == context_id).one()
 
     if not context:
-         raise errors.ContextIdNotFound
+        raise errors.ContextIdNotFound
 
     receivers = request.get('receivers', [])
     steps = request.get('steps', [])
