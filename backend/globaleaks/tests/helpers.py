@@ -18,7 +18,7 @@ from twisted.test import proto_helpers
 from globaleaks import db, models, security, anomaly
 from globaleaks.db.datainit import opportunistic_appdata_init, import_memory_variables
 from globaleaks.handlers import files, rtip, wbtip, authentication
-from globaleaks.handlers.base import GLApiCache
+from globaleaks.handlers.base import GLApiCache, GLHTTPConnection
 from globaleaks.handlers.admin import create_context, update_context, create_receiver, db_get_context_steps
 from globaleaks.handlers.admin.field import create_field
 from globaleaks.handlers.submission import create_submission, update_submission, create_whistleblower_tip
@@ -192,6 +192,26 @@ class TestGL(unittest.TestCase):
         # localized dict required in desc
         new_r['description'] =  'am I ignored ? %s' % descpattern
         return new_r
+
+    def get_dummy_field(self):
+        dummy_f = {
+            'is_template': True,
+            'step_id': '',
+            'fieldgroup_id': '',
+            'label': u'antani',
+            'type': u'inputbox',
+            'preview': False,
+            'description': u"field description",
+            'hint': u'field hint',
+            'multi_entry': False,
+            'stats_enabled': False,
+            'required': False,
+            'options': [],
+            'children': [],
+            'y': 1,
+            'x': 1,
+        }
+        return dummy_f
 
     @defer.inlineCallbacks
     def get_dummy_submission(self, context_id):
@@ -526,7 +546,7 @@ class TestHandler(TestGLWithPopulatedDB):
         application = Application([])
 
         tr = proto_helpers.StringTransport()
-        connection = httpserver.HTTPConnection()
+        connection = GLHTTPConnection()
         connection.factory = application
         connection.makeConnection(tr)
 
