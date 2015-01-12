@@ -19,15 +19,15 @@ def opportunistic_appdata_init():
     """
     Setup application data evaluating the presence of the following paths:
         - production data path: /usr/share/globaleaks/glclient/data/
-        - development data paths: ../client/app/data/
-                                  ../../client/app/data/
+        - development data paths: ../client/build/data/
+                                  ../client/app/data/
     """
 
     # Fields and applicative data initialization
 
     fields_l10n = [ "/usr/share/globaleaks/glclient/data/appdata_l10n.json",
-                    "../../../client/app/data/appdata_l10n.json",
-                    "../../../client/build/data/appdata_l10n.json"]
+                    "../../../client/build/data/appdata_l10n.json",
+                    "../../../client/app/data/appdata_l10n.json"]
 
     appdata_dict = None
 
@@ -124,9 +124,6 @@ def initialize_node(store, result, only_node, appdata):
         if k in appdata['templates']:
             setattr(notification, k, appdata['templates'][k])
 
-    # Todo handle pgp_expiration_alert and pgp_expiration_notice already included in client/app/data/txt
-    # and internationalized with right support on backend db.
-
     store.add(notification)
 
 def db_import_memory_variables(store):
@@ -201,7 +198,7 @@ def apply_cli_options(store):
                 accepted.update({ 'public_site' : unicode(composed_t2w_url) })
                 print "[+] %s public site in the DB: %s" % (verb, composed_t2w_url)
 
-            verb = "Overwritting"
+            verb = "Overwriting"
 
     if GLSetting.cmdline_options.public_website:
         if not re.match(requests.https_url_regexp, GLSetting.cmdline_options.public_website):

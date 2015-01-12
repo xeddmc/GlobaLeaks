@@ -2,12 +2,13 @@
 #   Requests
 #   ********
 #
-# This file contain the specification of all the requests that can be made by a
+# This file contains the specification of all the requests that can be made by a
 # GLClient to a GLBackend.
-# These specifications may be used with rest.validateMessage() inside of the
-# handler to verify if the request is correct.
+# These specifications may be used with rest.validateMessage() inside each of the API
+# handler in order to verify if the request is correct.
 
 uuid_regexp                       = r'^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$'
+uuid_regexp_or_empty              = r'^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$|^$'
 receiver_img_regexp               = r'^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}).png$'
 email_regexp                      = r'^([\w-]+\.)*[\w-]+@([\w-]+\.)+[a-z]{2,4}$|^$'
 email_regexp_or_empty             = r'^([\w-]+\.)*[\w-]+@([\w-]+\.)+[a-z]{2,4}$|^$'
@@ -61,6 +62,9 @@ receiverReceiverDesc = {
     'old_password': unicode,
     # 'username' : unicode, XXX at creation time is the same of mail_address
     'mail_address' : email_regexp,
+    # mail_address contain the 'admin' inserted mail
+    "ping_mail_address": email_regexp,
+    # ping_mail_address is a copy of 'mail_address' if unset.
     'description' : unicode,
     'gpg_key_armor': unicode,
     'gpg_key_remove': bool,
@@ -69,6 +73,7 @@ receiverReceiverDesc = {
     "file_notification": bool,
     "tip_notification": bool,
     "message_notification": bool,
+    "ping_notification": bool,
     "language": unicode,
     "timezone": int,
 }
@@ -163,7 +168,10 @@ adminNotificationDesc = {
     'pgp_expiration_alert': unicode,
     'pgp_expiration_notice': unicode,
     'zip_description': unicode,
-    'disable': bool,
+    'ping_mail_template': unicode,
+    'ping_mail_title': unicode,
+    'disable_admin_notification_emails': bool,
+    'disable_receivers_notification_emails': bool
 }
 
 adminContextDesc = {
@@ -173,7 +181,6 @@ adminContextDesc = {
     'postpone_superpower': bool,
     'can_delete_submission': bool,
     'maximum_selectable_receivers': int,
-    'selectable_receiver': bool,
     'tip_max_access' : int,
     'tip_timetolive' : int,
     'file_max_download' : int,
@@ -341,7 +348,6 @@ nodeContext = {
     'name': unicode,
     'presentation_order': int,
     'description': unicode,
-    'selectable_receiver': bool,
     'tip_timetolive': int,
     'submission_introduction': unicode,
     'maximum_selectable_receivers': int,
@@ -395,15 +401,9 @@ internalTipDesc = {
     'download_limit': int,
 }
 
-# TODO if the admin has visibility to different variables compared to the WB
-# if its so, rename to FieldDesc (generic)
-
-FieldDescFromTemplate = {
-    'template_id': uuid_regexp,
-    'step_id': uuid_regexp
-}
-
 FieldDesc = {
+    'template_id': uuid_regexp_or_empty,
+    'step_id': uuid_regexp_or_empty,
     'label': unicode,
     'description': unicode,
     'hint': unicode,
@@ -450,5 +450,4 @@ wizardFirstSetup = {
     'receiver' : adminReceiverDesc,
     'context' : adminContextDesc,
     'node' : adminNodeDesc,
-    'appdata' : wizardAppdataDesc,
 }
