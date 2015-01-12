@@ -8,8 +8,8 @@ from globaleaks.tests import helpers
 from globaleaks.handlers import node, admin
 from globaleaks.settings import GLSetting
 
-class TestInfoCollection(helpers.TestHandlerWithPopulatedDB):
-    _handler = node.InfoCollection
+class TestNodeInstance(helpers.TestHandlerWithPopulatedDB):
+    _handler = node.NodeInstance
 
     @inlineCallbacks
     def test_get(self):
@@ -25,7 +25,7 @@ class TestAhmiaDescriptionHandler(helpers.TestHandlerWithPopulatedDB):
     _handler = node.AhmiaDescriptionHandler
 
     @inlineCallbacks
-    def test_001_get_ahmia_disabled(self):
+    def test_get_ahmia_disabled(self):
         handler = self.request({}, role='admin')
 
         nodedict = helpers.MockDict().dummyNode
@@ -38,7 +38,7 @@ class TestAhmiaDescriptionHandler(helpers.TestHandlerWithPopulatedDB):
         self.assertEqual(len(self.responses), 0)
 
     @inlineCallbacks
-    def test_002_get_ahmia_enabled(self):
+    def test_get_ahmia_enabled(self):
         handler = self.request({}, role='admin')
 
         nodedict = helpers.MockDict().dummyNode

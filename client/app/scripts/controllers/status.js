@@ -8,8 +8,6 @@ GLClient.controller('StatusCtrl',
     $scope.xsrf_token = $.cookie('XSRF-TOKEN');
     $scope.target_file = '#';
 
-    $scope.auth_landing_page = Authentication.auth_landing_page;
-
     $scope.getFields = function(field) {
       ret = [];
       if (field === undefined) {
@@ -42,8 +40,6 @@ GLClient.controller('StatusCtrl',
     }
 
     if (Authentication.role === 'wb') {
-
-      $scope.userrole = 'wb';
 
       $scope.fileupload_url = '/wbtip/upload';
 
@@ -89,8 +85,6 @@ GLClient.controller('StatusCtrl',
       });
 
     } else if (Authentication.role === 'receiver') {
-
-      $scope.userrole = 'receiver';
 
       $scope.preferences = ReceiverPreferences.get();
     
@@ -143,9 +137,15 @@ GLClient.controller('StatusCtrl',
         });
       });
     } else {
-      search = 'src=' + $location.path();
-      $location.path('/login');
-      $location.search(search);
+      if($location.path() === '/status') {
+        // wb
+        $location.path('/');
+      } else {
+        // receiver
+        var search = 'src=' + $location.path();
+        $location.path('/login');
+        $location.search(search);
+      }
     }
 
     $scope.newComment = function() {

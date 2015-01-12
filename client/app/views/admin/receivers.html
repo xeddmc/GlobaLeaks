@@ -20,9 +20,8 @@
                   <div class="form-group">
                     <label>
                       <span data-translate>Email Address</span>
-                      (<span data-translate>Username</span>)
                     </label>
-                    <input class="form-control" name="email" data-ng-model="new_receiver.email" ng-pattern="email_regexp" type="text" required>
+                    <input class="form-control" name="email" data-ng-model="new_receiver.email" data-ng-pattern="email_regexp" type="text" required>
                     <p class="has-error" data-ng-show="newReceiver.email.$error.pattern">
                       <span data-translate>Invalid email address</span>
                     </p>
@@ -33,7 +32,7 @@
                 <div class="col-md-12">
                   <div class="form-group">
                     <label data-translate>Password</label>
-                    <input type="hidden" ng-init="new_receiver.password = 'globaleaks'">
+                    <input type="hidden" data-ng-init="new_receiver.password = 'globaleaks'">
                     <div>
                       <span data-translate>By default receivers password is:</span> <span class="label label-primary">globaleaks</span></br>
                       <span data-translate>The system forces users to change the password at first login.</span>
@@ -89,7 +88,7 @@
                     <div data-ng-show="editing">
                       <span class="col-md-7 pull-left editorHeaderTitle">{{receiver.name}}</span>
                       <span class="col-md-3 pull-right editorHeaderButtons">
-                        <button class="btn btn-success saveReceiver" data-ng-disabled="receiverForm.$invalid || unsafe_password" data-ng-click="save_receiver()" type="submit" >
+                        <button class="btn btn-success saveReceiver" data-ng-disabled="receiverForm.$invalid || unsafe_password" data-ng-click="save_receiver(receiver)" type="submit" >
                           <i class="glyphicon glyphicon-ok"></i>
                           <span data-translate>Save</span>
                         </button>
@@ -138,8 +137,8 @@
                       </div>
 
                       <div class="form-group">
-                        <label data-translate>Email Address (Username)</label>
-                        <input class="form-control" name="email" data-ng-model="receiver.mail_address" type="text" ng-pattern="email_regexp" required>
+                        <label data-translate>Email Address</label>
+                        <input class="form-control" name="email" data-ng-model="receiver.mail_address" type="text" data-ng-pattern="email_regexp" required>
                         <p class="has-error" data-ng-show="receiverForm.email.$error.pattern">
                           <span data-translate>Invalid email address</span>
                         </p>
@@ -197,7 +196,7 @@
                         <label data-translate>Configuration</label>
                         <select class="form-control" data-ng-model="receiver.configuration">
                           <option value="default" data-translate>Default</option>
-                          <option value="hidden" data-translate>Hidden</option>
+                          <option value="forcefully_selected" data-translate>Forcefully Selected</option>
                           <option value="unselectable" data-translate>Unselectable</option>
                         </select>
                       </div>
@@ -211,6 +210,23 @@
                         <label data-translate>Timezone</label>
                         <select class="form-control" data-ng-model="receiver.timezone" data-ng-options="item.timezone as item.label for item in timezones"></select>
                       </div>
+
+                      <div class="form-group">
+                        <input data-ng-model="receiver.ping_notification" type="checkbox">
+                        <label data-translate>Enable Ping notification</label>
+                      </div>
+
+                      <div class="form-group" data-ng-show="receiver.ping_notification">
+                        <label data-translate>Ping Email Address</label>
+                        <input class="form-control" name="ping_email" data-ng-model="receiver.ping_mail_address" type="text" data-ng-pattern="email_regexp">
+                        <div>
+                          <span data-translate>This email will be used for ping notifications.</span>
+                        </div>
+                        <p class="has-error" data-ng-show="receiverForm.ping_email.$error.pattern">
+                          <span data-translate>Invalid email address</span>
+                        </p>
+                      </div>
+
                     </div>
 
                     <div class="col-md-6">

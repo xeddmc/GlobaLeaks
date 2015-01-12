@@ -9,11 +9,12 @@ var GLClient = angular.module('GLClient', [
     'ui.bootstrap',
     'ui.sortable',
     'ang-drag-drop',
+    'monospaced.elastic',
     'resourceServices',
     'submissionUI',
-    'GLClientFilters',
     'blueimp.fileupload',
-    'pascalprecht.translate'
+    'pascalprecht.translate',
+    'GLClientFilters'
   ]).
   config(['$routeProvider', '$translateProvider', '$tooltipProvider', function($routeProvider, $translateProvider, $tooltipProvider) {
 
@@ -65,6 +66,12 @@ var GLClient = angular.module('GLClient', [
         controller: 'ReceiverTipsCtrl',
         header_title: 'Receiver Interface',
         header_subtitle: 'Your Tips'
+      }).
+      when('/receiver/activities', {
+        templateUrl: 'views/receiver/activities.html',
+        controller: 'ReceiverNotificationCtrl',
+        header_title: 'Receiver Interface',
+        header_subtitle: 'Recent Activities'
       }).
       when('/admin/landing', {
         templateUrl: 'views/admin/landing.html',
@@ -132,7 +139,7 @@ var GLClient = angular.module('GLClient', [
         header_title: 'Administration Interface',
         header_subtitle: 'Files Overview'
       }).
-      when('/admin/anomalies/', {
+      when('/admin/anomalies', {
         templateUrl: 'views/admin/anomalies.html',
         controller: 'AnomaliesCtrl',
         header_title: 'Administration Interface',
@@ -144,16 +151,22 @@ var GLClient = angular.module('GLClient', [
         header_title: 'Administration Interface',
         header_subtitle: 'System Stats'
       }).
-      when('/admin/activities/', {
+      when('/admin/activities', {
         templateUrl: 'views/admin/activities.html',
         controller: 'ActivitiesCtrl',
         header_title: 'Administration Interface',
         header_subtitle: 'Recent Activities'
       }).
+      when('/admin', {
+        templateUrl: 'views/admin.html',
+        controller: 'LoginCtrl',
+        header_title: 'Admin Login',
+        header_subtitle: ''
+      }).
       when('/login', {
         templateUrl: 'views/login.html',
         controller: 'LoginCtrl',
-        header_title: 'Login',
+        header_title: 'Receiver Login',
         header_subtitle: ''
       }).
       when('/start', {

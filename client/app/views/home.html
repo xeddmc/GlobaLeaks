@@ -32,9 +32,7 @@
             </div>
           </div>
           <div id="WhistleblowerLoginBox" class="center-block">
-            <div>
-              <h3 data-translate>Have you already filed a submission? Enter your key code.</h3>
-            </div>
+            <div id="WhistleblowerLoginBoxLabel" data-translate>Have you already filed a submission? Enter your key code.</div>
             <div data-ng-include="'views/partials/wb_login.html'"></div>
             <div class="LoginErrorBoxHomepage row" data-ng-show="errors[0].code == 29">
               <div class="col-md-12">
@@ -51,10 +49,8 @@
         </div>
       </div>
       <div data-ng-hide="node.configured">
-        <span data-translate>Your node is not configured! Please use the</span>
-        <a href="/#/admin/contexts">
-          <span data-translate>Admin interface and configure at least one context</span>
-        </a>
+        <h2 data-translate>This node is not configured.</h2>
+        <span data-translate>You will not be able to send a submission.</span><br />
       </div>
     </div>
 

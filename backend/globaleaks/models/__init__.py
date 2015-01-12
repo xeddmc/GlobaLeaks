@@ -182,27 +182,6 @@ class Context(Model):
     """
     This model keeps track of specific contexts settings.
     """
-    # steps = [
-    #     {
-    #         'name': local_dict,
-    #         'type': 'fields',
-    #         'fields': [field_group_id1,
-    #                    field_group_id2]
-    #     },
-    #     {
-    #         'name': local_dict,
-    #         'type': 'receiver',
-    #         'options': {
-    #             'show_small_receiver': True,
-    #             'selectable_receiver': True,
-    #             'show_small_cards': False,
-    #             'maximum_selectable_receivers': 10,
-    #             'select_all_receivers': True
-    #         }
-    #     }
-    # ]
-
-    selectable_receiver = Bool()
     show_small_cards = Bool()
     show_receivers = Bool()
     maximum_selectable_receivers = Int()
@@ -239,7 +218,7 @@ class Context(Model):
     int_keys = [ 'tip_max_access', 'file_max_download',
                  'maximum_selectable_receivers',
                  'presentation_order' ]
-    bool_keys = [ 'selectable_receiver', 'select_all_receivers',
+    bool_keys = [ 'select_all_receivers',
                   'postpone_superpower', 'can_delete_submission',
                   'show_small_cards', 'show_receivers', "enable_private_messages" ]
 
@@ -484,21 +463,21 @@ class Node(Model):
 
     unicode_keys = ['name', 'public_site', 'email', 'hidden_service',
                     'exception_email', 'default_language', 'receipt_regexp']
-    int_keys = [ 'stats_update_time', 'maximum_namesize',
-                 'maximum_textsize', 'maximum_filesize', 'default_timezone' ]
-    bool_keys = [ 'tor2web_admin', 'tor2web_receiver', 'tor2web_submission',
-                  'tor2web_unauth', 'postpone_superpower',
-                  'can_delete_submission', 'ahmia', 'allow_unencrypted',
-                  'disable_privacy_badge', 'disable_security_awareness_badge',
-                  'disable_security_awareness_questions', 'enable_custom_privacy_badge' ]
+    int_keys = ['stats_update_time', 'maximum_namesize',
+                'maximum_textsize', 'maximum_filesize', 'default_timezone']
+    bool_keys = ['tor2web_admin', 'tor2web_receiver', 'tor2web_submission',
+                 'tor2web_unauth', 'postpone_superpower',
+                 'can_delete_submission', 'ahmia', 'allow_unencrypted',
+                 'disable_privacy_badge', 'disable_security_awareness_badge',
+                 'disable_security_awareness_questions', 'enable_custom_privacy_badge']
 
     # wizard_done is not checked because it's set by the backend
 
-    localized_strings = [ 'description', 'presentation', 'footer', 'subtitle',
-                          'security_awareness_title',
-                          'security_awareness_text', 'whistleblowing_question',
-                          'whistleblowing_button', 'custom_privacy_badge_tbb',
-                          'custom_privacy_badge_tor', 'custom_privacy_badge_none' ]
+    localized_strings = ['description', 'presentation', 'footer', 'subtitle',
+                         'security_awareness_title',
+                         'security_awareness_text', 'whistleblowing_question',
+                         'whistleblowing_button', 'custom_privacy_badge_tbb',
+                         'custom_privacy_badge_tor', 'custom_privacy_badge_none']
 
 
 class Notification(Model):
@@ -544,7 +523,13 @@ class Notification(Model):
     pgp_expiration_alert = JSON(validator=longlocal_v)
     pgp_expiration_notice = JSON(validator=longlocal_v)
 
-    zip_description = JSON()
+    zip_description = JSON(validator=longlocal_v)
+
+    ping_mail_template = JSON(validator=longlocal_v)
+    ping_mail_title = JSON(validator=longlocal_v)
+
+    disable_admin_notification_emails = Bool(default=False)
+    disable_receivers_notification_emails = Bool(default=False)
 
     unicode_keys = [
         'server',
@@ -572,8 +557,13 @@ class Notification(Model):
         'encrypted_message_mail_title',
         'plaintext_message_template',
         'plaintext_message_mail_title',
-        'zip_description']
-    int_keys = ['port']
+        'zip_description',
+        'ping_mail_template',
+        'ping_mail_title']
+    int_keys = [
+        'port',
+        'disable_admin_notification_emails',
+        'disable_receivers_notification_emails']
 
 
 class Receiver(Model):
@@ -598,8 +588,10 @@ class Receiver(Model):
     gpg_key_armor = Unicode()
     gpg_enable_notification = Bool()
 
-    # Can be changed and can be different from username!
+    # Can be changed only by admin (but also differ from username!)
     mail_address = Unicode()
+    # Can be changed by the user itself
+    ping_mail_address = Unicode()
 
     # Admin chosen options
     can_delete_submission = Bool()
@@ -607,11 +599,12 @@ class Receiver(Model):
 
     last_update = DateTime()
 
-    # personal advanced settings
     tip_notification = Bool()
     comment_notification = Bool()
     file_notification = Bool()
     message_notification = Bool()
+
+    ping_notification = Bool(default=False)
 
     # contexts = ReferenceSet("Context.id",
     #                         "ReceiverContext.context_id",
@@ -620,15 +613,34 @@ class Receiver(Model):
 
     presentation_order = Int()
 
-    _configuration = [u'default', u'hidden', u'unselectable']
+    _configuration = [u'default', u'forcefully_selected', u'unselectable']
     _gpg_types = [u'Disabled', u'Enabled']
 
-    unicode_keys = ['name', 'mail_address', 'configuration']
+    unicode_keys = ['name', 'mail_address',
+                    'ping_mail_address', 'configuration']
     localized_strings = ['description']
     int_keys = ['presentation_order']
     bool_keys = ['can_delete_submission', 'tip_notification',
                  'comment_notification', 'file_notification',
-                 'message_notification', 'postpone_superpower']
+                 'message_notification', 'postpone_superpower',
+                 'ping_notification']
+
+
+class EventLogs(Model):
+    """
+    Class used to keep track of the notification to be display to the receiver
+    """
+
+    description = JSON()
+    title = Unicode()
+    receiver_id = Unicode()
+    receivertip_id = Unicode()
+    event_reference = JSON()
+
+    # XXX This can be used to keep track mail reliability ??
+    mail_sent = Bool()
+
+
 
 
 class Field(Model):
@@ -894,6 +906,9 @@ Comment.internaltip = Reference(Comment.internaltip_id, InternalTip.id)
 
 Message.receivertip = Reference(Message.receivertip_id, ReceiverTip.id)
 
+EventLogs.receiver = Reference(EventLogs.receiver_id, Receiver.id)
+EventLogs.rtip = Reference(EventLogs.receivertip_id, ReceiverTip.id)
+
 Field.children = ReferenceSet(
     Field.id,
     FieldField.parent_id,
@@ -921,4 +936,4 @@ Receiver.contexts = ReferenceSet(
 models = [Node, User, Context, ReceiverTip, WhistleblowerTip, Comment,
           InternalTip, Receiver, ReceiverContext, InternalFile, ReceiverFile,
           Notification, Message, Field, FieldField, Step,
-          Stats, Anomalies, ApplicationData]
+          Stats, Anomalies, ApplicationData, EventLogs ]
