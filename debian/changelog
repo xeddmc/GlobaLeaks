@@ -1,8 +1,14 @@
+globaleaks (2.60.47-0) precise; urgency=medium
+
+  * New upstream release
+
+ -- GlobaLeaks software signing key <info@globaleaks.org> Mon, 12 Jan 2015 03:30:49 +0100
+
 globaleaks (2.60.46-0) precise; urgency=medium
 
-  * New upstream release 
+  * New upstream release
 
- -- Giovanni Pellerano <evilaliv3@remotehost>  Tue, 06 Jan 2015 01:05:36 +0100
+ -- GlobaLeaks software signing key <info@globaleaks.org> Tue, 06 Jan 2015 01:05:36 +0100
 
 globaleaks (2.60.45-0) precise; urgency=medium
 
