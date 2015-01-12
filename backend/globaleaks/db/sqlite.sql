@@ -51,7 +51,6 @@ CREATE TABLE context (
     file_max_download INTEGER NOT NULL,
     last_update VARCHAR,
     name BLOB NOT NULL,
-    selectable_receiver INTEGER NOT NULL,
     tip_max_access INTEGER NOT NULL,
     tip_timetolive INTEGER NOT NULL,
     submission_timetolive INTEGER NOT NULL,
@@ -63,7 +62,7 @@ CREATE TABLE context (
     show_small_cards INTEGER NOT NULL,
     show_receivers INTEGER NOT NULL,
     enable_private_messages INTEGER NOT NULL,
-    presentation_order INTEGER NOT NULL,
+    presentation_order INTEGER,
     PRIMARY KEY (id)
 );
 
@@ -189,13 +188,17 @@ CREATE TABLE notification (
     pgp_expiration_alert BLOB,
     pgp_expiration_notice BLOB,
     zip_description BLOB,
+    ping_mail_template BLOB,
+    ping_mail_title BLOB,
+    disable_admin_notification_emails INTEGER NOT NULL,
+    disable_receivers_notification_emails INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE receiver (
     id VARCHAR NOT NULL,
     user_id VARCHAR NOT NULL,
-    configuration VARCHAR NOT NULL CHECK (configuration IN ('default', 'hidden', 'unselectable')),
+    configuration VARCHAR NOT NULL CHECK (configuration IN ('default', 'forcefully_selected', 'unselectable')),
     creation_date VARCHAR NOT NULL,
     can_delete_submission INTEGER NOT NULL,
     postpone_superpower INTEGER NOT NULL,
@@ -206,15 +209,31 @@ CREATE TABLE receiver (
     file_notification INTEGER NOT NULL,
     tip_notification INTEGER NOT NULL,
     message_notification INTEGER NOT NULL,
+    ping_notification INTEGER NOT NULL,
     mail_address VARCHAR NOT NULL,
+    ping_mail_address VARCHAR NOT NULL,
     gpg_key_status VARCHAR NOT NULL CHECK (gpg_key_status IN ('Disabled', 'Enabled')),
     gpg_key_info VARCHAR,
     gpg_key_fingerprint VARCHAR,
     gpg_key_armor VARCHAR,
     gpg_enable_notification INTEGER,
-    presentation_order INTEGER NOT NULL,
+    presentation_order INTEGER,
     PRIMARY KEY (id),
     FOREIGN KEY(user_id) REFERENCES user(id) ON DELETE CASCADE
+);
+
+CREATE TABLE eventlogs (
+    id VARCHAR NOT NULL,
+    creation_date VARCHAR NOT NULL,
+    event_reference VARCHAR NOT NULL,
+    description VARCHAR NOT NULL,
+    title VARCHAR NOT NULL,
+    receiver_id VARCHAR NOT NULL,
+    receivertip_id VARCHAR,
+    mail_sent INTEGER,
+    PRIMARY KEY (id),
+    FOREIGN KEY(receiver_id) REFERENCES receiver(id) ON DELETE CASCADE,
+    FOREIGN KEY(receivertip_id) REFERENCES receivertip(id) ON DELETE CASCADE
 );
 
 CREATE TABLE receiver_context (

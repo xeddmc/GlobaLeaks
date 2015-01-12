@@ -19,10 +19,11 @@ from globaleaks import db, models, security, anomaly
 from globaleaks.db.datainit import opportunistic_appdata_init, import_memory_variables
 from globaleaks.handlers import files, rtip, wbtip, authentication
 from globaleaks.handlers.base import GLApiCache, GLHTTPConnection
-from globaleaks.handlers.admin import create_context, update_context, create_receiver, db_get_context_steps
+from globaleaks.handlers.admin import create_context, get_context, update_context, create_receiver, db_get_context_steps
 from globaleaks.handlers.admin.field import create_field
+from globaleaks.handlers.admin.notification import get_notification
 from globaleaks.handlers.submission import create_submission, update_submission, create_whistleblower_tip
-from globaleaks.jobs import delivery_sched, notification_sched, statistics_sched
+from globaleaks.jobs import delivery_sched, notification_sched, statistics_sched, mailflush_sched
 from globaleaks.models import db_forge_obj, ReceiverTip, ReceiverFile, WhistleblowerTip, InternalTip
 from globaleaks.plugins import notification
 from globaleaks.settings import GLSetting, transact, transact_ro
@@ -34,7 +35,6 @@ from globaleaks.security import GLSecureTemporaryFile
 from . import TEST_DIR
 
 ## constants
-
 VALID_PASSWORD1 = u'justapasswordwithaletterandanumberandbiggerthan8chars'
 VALID_PASSWORD2 = u'justap455w0rdwithaletterandanumberandbiggerthan8chars'
 VALID_SALT1 = security.get_salt(rstr.xeger(r'[A-Za-z0-9]{56}'))
@@ -123,13 +123,10 @@ class TestGL(unittest.TestCase):
 
         self.setUp_dummy()
 
-        # This mocks out the MailNotification plugin so it does not actually
-        # require to perform a connection to send an email.
-        # XXX we probably want to create a proper mock of the ESMTPSenderFactory
-        def mail_flush_mock(self, from_address, to_address, message_file, event):
+        def sendmail_mock(*args):
             return defer.succeed(None)
 
-        notification.MailNotification.mail_flush = mail_flush_mock
+        mailutils.sendmail = sendmail_mock
 
         yield db.create_tables(self.create_node)
 
@@ -149,7 +146,6 @@ class TestGL(unittest.TestCase):
         self.dummyFieldTemplates = dummyStuff.dummyFieldTemplates
         self.dummyContext = dummyStuff.dummyContext
         self.dummySubmission = dummyStuff.dummySubmission
-        self.dummyNotification = dummyStuff.dummyNotification
         self.dummyReceiverUser_1 = self.get_dummy_receiver_user('receiver1')
         self.dummyReceiverUser_2 = self.get_dummy_receiver_user('receiver2')
         self.dummyReceiver_1 = self.get_dummy_receiver('receiver1') # the one without PGP
@@ -196,6 +192,7 @@ class TestGL(unittest.TestCase):
     def get_dummy_field(self):
         dummy_f = {
             'is_template': True,
+            'template_id': '',
             'step_id': '',
             'fieldgroup_id': '',
             'label': u'antani',
@@ -225,9 +222,9 @@ class TestGL(unittest.TestCase):
         dummySubmissionDict = {}
         dummySubmissionDict['context_id'] = context_id
         dummySubmissionDict['wb_steps'] = yield fill_random_fields(context_id)
-        dummySubmissionDict['receivers'] = []
+        dummySubmissionDict['receivers'] = (yield get_context(context_id, 'en'))['receivers']
         dummySubmissionDict['files'] = []
-        dummySubmissionDict['finalize'] = True
+        dummySubmissionDict['finalize'] = False
 
         defer.returnValue(dummySubmissionDict)
 
@@ -407,23 +404,17 @@ class TestGLWithPopulatedDB(TestGL):
 
         yield update_context(self.dummyContext['id'], self.dummyContext, 'en')
 
-        # fill_data/create_submission
+    @inlineCallbacks
+    def perform_submission(self):
+
         self.dummySubmission['context_id'] = self.dummyContext['id']
-        self.dummySubmission['receivers'] = receivers_ids
+        self.dummySubmission['receivers'] = self.dummyContext['receivers']
         self.dummySubmission['wb_steps'] = yield fill_random_fields(self.dummyContext['id'])
-        self.dummySubmissionNotFinalized = yield create_submission(self.dummySubmission, False, 'en')
         self.dummySubmission = yield create_submission(self.dummySubmission, False, 'en')
 
         yield self.emulate_file_upload(self.dummySubmission['id'])
-        # fill_data/update_submssion
         submission = yield update_submission(self.dummySubmission['id'], self.dummySubmission, True, 'en')
-        # fill_data/create_whistleblower
         self.dummyWBTip = yield create_whistleblower_tip(self.dummySubmission)
-
-        assert self.dummyReceiver_1.has_key('id')
-        assert self.dummyReceiver_2.has_key('id')
-        assert self.dummyContext.has_key('id')
-        assert self.dummySubmission.has_key('id')
 
         yield delivery_sched.DeliverySchedule().operation()
         yield notification_sched.NotificationSchedule().operation()
@@ -447,7 +438,6 @@ class TestGLWithPopulatedDB(TestGL):
                                                rtip_desc['rtip_id'],
                                                messageCreation)
 
-
         wbtips_desc = yield self.get_wbtips()
 
         for wbtip_desc in wbtips_desc:
@@ -459,7 +449,6 @@ class TestGLWithPopulatedDB(TestGL):
 
         yield delivery_sched.DeliverySchedule().operation()
         yield notification_sched.NotificationSchedule().operation()
-
 
 
 class TestHandler(TestGLWithPopulatedDB):
@@ -606,6 +595,7 @@ class MockDict():
             # Email can be different from the user, but at the creation time is used
             # the same address, therefore we keep the same of dummyReceiver.username
             'mail_address': self.dummyReceiverUser['username'],
+            'ping_mail_address': '',
             'can_delete_submission': True,
             'postpone_superpower': False,
             'contexts' : [],
@@ -613,6 +603,7 @@ class MockDict():
             'file_notification': True,
             'comment_notification': True,
             'message_notification': True,
+            'ping_notification': False,
             'gpg_key_info': u'',
             'gpg_key_fingerprint' : u'',
             'gpg_key_status': models.Receiver._gpg_types[0], # disabled
@@ -629,6 +620,7 @@ class MockDict():
         {
             'id': u'd4f06ad1-eb7a-4b0d-984f-09373520cce7',
             'is_template': True,
+            'template_id': '',
             'step_id': '',
             'fieldgroup_id': '',
             'label': u'Field 1',
@@ -647,6 +639,7 @@ class MockDict():
         {
             'id': u'c4572574-6e6b-4d86-9a2a-ba2e9221467d',
             'is_template': True,
+            'template_id': '',
             'step_id': '',
             'fieldgroup_id': '',
             'label': u'Field 2',
@@ -665,6 +658,7 @@ class MockDict():
         {
             'id': u'6a6e9282-15e8-47cd-9cc6-35fd40a4a58f',
             'is_template': True,
+            'template_id': '',
             'step_id': '',
             'fieldgroup_id': '',
             'label': u'Generalities',
@@ -683,6 +677,7 @@ class MockDict():
         {
             'id': u'7459abe3-52c9-4a7a-8d48-cabe3ffd2abd',
             'is_template': True,
+            'template_id': '',
             'step_id': '',
             'fieldgroup_id': '',
             'label': u'Name',
@@ -701,6 +696,7 @@ class MockDict():
         {
             'id': u'de1f0cf8-63a7-4ed8-bc5d-7cf0e5a2aec2',
             'is_template': True,
+            'template_id': '',
             'step_id': '',
             'fieldgroup_id': '',
             'label': u'Surname',
@@ -738,7 +734,6 @@ class MockDict():
             'name': u'Already localized name',
             'description': u'Already localized desc',
             'steps': self.dummySteps,
-            'selectable_receiver': False,
             'select_all_receivers': True,
             'tip_max_access': 10,
             # tip_timetolive is expressed in days
@@ -814,51 +809,6 @@ class MockDict():
             'custom_privacy_badge_tbb': u'',
             'custom_privacy_badge_tor': u'',
             'custom_privacy_badge_none': u'',
-        }
-
-        self.generic_template_keywords = [ '%NodeName%', '%HiddenService%',
-                                           '%PublicSite%', '%ReceiverName%',
-                                           '%ContextName%' ]
-        self.tip_template_keywords = [ '%TipTorURL%', '%TipT2WURL%', '%EventTime%' ]
-        self.comment_template_keywords = [ '%CommentSource%', '%EventTime%' ]
-        self.file_template_keywords = [ '%FileName%', '%EventTime%',
-                                        '%FileSize%', '%FileType%' ]
-
-        self.dummyNotification = {
-            'server': u'mail.foobar.xxx',
-            'port': 12345,
-            'username': u'xxxx@xxx.y',
-            'password': u'antani',
-            'security': u'SSL',
-            'source_name': u'UnitTest Helper Name',
-            'source_email': u'unit@test.help',
-            'encrypted_tip_template': template_keys(self.tip_template_keywords,
-                                          self.generic_template_keywords, "Tip"),
-            'plaintext_tip_template': template_keys(self.tip_template_keywords,
-                                                    self.generic_template_keywords, "Tip"),
-            'encrypted_tip_mail_title': u'xXx',
-            'plaintext_tip_mail_title': u'XxX',
-            'encrypted_file_template':template_keys(self.file_template_keywords,
-                                          self.generic_template_keywords, "File"),
-            'plaintext_file_template':template_keys(self.file_template_keywords,
-                                          self.generic_template_keywords, "File"),
-            'encrypted_file_mail_title': u'kkk',
-            'plaintext_file_mail_title': u'kkk',
-            'encrypted_comment_template': template_keys(self.comment_template_keywords,
-                                              self.generic_template_keywords, "Comment"),
-            'plaintext_comment_template': template_keys(self.comment_template_keywords,
-                                              self.generic_template_keywords, "Comment"),
-            'encrypted_comment_mail_title': u'yyy',
-            'plaintext_comment_mail_title': u'yyy',
-            'encrypted_message_template': u'%B EventTime% %TipUN%',
-            'plaintext_message_template': u'%B EventTime% %TipUN%',
-            'encrypted_message_mail_title': u'T %EventTime %TipUN',
-            'plaintext_message_mail_title': u'T %EventTime %TipUN',
-            'admin_anomaly_template': u'TODO',
-            'pgp_expiration_alert': u'TODO',
-            'pgp_expiration_notice': u'TODO',
-            'zip_description': u'TODO',
-            'disable': False,
         }
 
 

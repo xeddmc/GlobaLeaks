@@ -14,7 +14,6 @@ from globaleaks.handlers.submission import create_submission, update_submission
 from globaleaks.settings import GLSetting
 from globaleaks.models import Receiver
 from globaleaks.jobs.delivery_sched import DeliverySchedule, get_files_by_itip, get_receiverfile_by_itip
-from globaleaks.plugins.notification import MailNotification
 from globaleaks.plugins.base import Event
 from globaleaks.utils.templating import Templating
 
@@ -36,22 +35,27 @@ class TestReceiverSetKey(TestHandlerWithPopulatedDB):
         
 
     receiver_only_update = {
-        'gpg_key_armor': None, 'gpg_key_remove': False,
-        "gpg_key_info": None, "gpg_key_fingerprint": None,
+        'gpg_key_armor': None,
+        'gpg_key_remove': False,
+        'gpg_key_info': None,
+        'gpg_key_fingerprint': None,
         'gpg_key_status': Receiver._gpg_types[0], # Disabled
-        "gpg_enable_notification": False,
-        'name' : "irrelevant",
-        'password' : "",
-        'old_password': "",
-        'username' : "irrelevant",
+        'gpg_enable_notification': False,
+        'name': 'irrelevant',
+        'password': '',
+        'old_password': '',
+        'username' : 'irrelevant',
         'mail_address': 'am_i_ignored_or_not@email.xxx',
-        'description' : "A new description",
-        "comment_notification": True,
-        "file_notification": True,
-        "tip_notification": False,
-        "message_notification": False,
-        "language": u"en",
-        "timezone": 0
+        'ping_mail_address': '',
+        'description' : 'A new description',
+        'comment_notification': True,
+        'file_notification': True,
+        'tip_notification': False,
+        'message_notification': False,
+        'ping_notification': False,
+        'ping_mail_address': 'am_i_ignored_or_not@email.xxx',
+        'language': u'en',
+        'timezone': 0
     }
 
     @inlineCallbacks
@@ -120,19 +124,19 @@ class TestReceiverSetKey(TestHandlerWithPopulatedDB):
                          more info on: https://www.youtube.com/watch?v=C7JZ4F3zJdY \
                          and know that you're not alone!"
 
-        mock_event = Event(type=u'encrypted_tip', trigger='Tip',
-                    notification_settings = dummy_template,
-                    trigger_info = {
-                        'creation_date': '2013-05-13T17:49:26.105485', #epoch!
-                        'id': 'useless',
-                        'wb_steps' : fill_random_fields(self.dummyContext['id']),
-                    },
-                    node_info = MockDict().dummyNode,
-                    receiver_info = MockDict().dummyReceiver,
-                    context_info = MockDict().dummyContext,
-                    steps_info = {},
-                    plugin = MailNotification(),
-                    trigger_parent = {} )
+        mock_event = Event(type=u'encrypted_tip',
+                           trigger='Tip',
+                           tip_info = {
+                               'creation_date': '2013-05-13T17:49:26.105485', #epoch!
+                               'id': 'useless',
+                               'wb_steps' : fill_random_fields(self.dummyContext['id']),
+                           },
+                           node_info = MockDict().dummyNode,
+                           receiver_info = MockDict().dummyReceiver,
+                           context_info = MockDict().dummyContext,
+                           steps_info = {},
+                           subevent_info = {},
+                           do_mail=False)
 
         mail_content = Templating().format_template(dummy_template, mock_event)
 

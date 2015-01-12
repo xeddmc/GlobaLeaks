@@ -176,6 +176,7 @@ class GLSettingsClass(object):
         self.anomaly_seconds_delta = 30           # runner.py function expects seconds
         self.stats_minutes_delta = 10             # runner.py function expects minutes
         self.pgp_check_hours_delta = 24           # runner.py function expects hours
+        self.mailflush_minutes_delta = 5          # before change check mailflush logic and delay
 
         self.www_form_urlencoded_maximum_size = 1024
 
@@ -256,11 +257,6 @@ class GLSettingsClass(object):
         self.socks_port = 9050
         self.tor_socks_enable = True
 
-        # https://github.com/globaleaks/GlobaLeaks/issues/647
-        # we've struck a notification settings in a server, due to an
-        # error looping thru email. A temporary way to disable mail
-        # is put here. A globaleaks restart cause the email to restart.
-        self.notification_temporary_disable = False
         self.notification_limit = 30
 
         self.user = getpass.getuser()
@@ -418,8 +414,6 @@ class GLSettingsClass(object):
                                        self.cmdline_options.host_list.replace(" ", "").split(",")))
 
         self.tor_socks_enable = not self.cmdline_options.disable_tor_socks
-
-        self.notification_temporary_disable = self.cmdline_options.notification_temporary_disable
 
         self.socks_host = self.cmdline_options.socks_host
 
