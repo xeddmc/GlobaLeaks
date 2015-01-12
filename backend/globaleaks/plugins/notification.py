@@ -41,7 +41,6 @@ class MailNotification(Notification):
         return True
 
     def do_notify(self, event):
-
         # check if exists the conf
         if not self.validate_admin_opt(event.notification_settings):
             log.info('invalid configuration for admin email!')
@@ -128,7 +127,7 @@ class MailNotification(Notification):
             return None
 
         self.finished = self.mail_flush(event.notification_settings['source_email'],
-                                        [ receiver_mail ], message, event)
+                                        [receiver_mail], message, event)
 
         return self.finished
 

@@ -121,11 +121,20 @@ class TestNotificationInstance(helpers.TestHandlerWithPopulatedDB):
     _handler = admin.notification.NotificationInstance
 
     @inlineCallbacks
-    def test_update_notification(self):
-         self.dummyNotification['server'] = 'stuff'
-         handler = self.request(self.dummyNotification, role='admin')
+    def test_get(self):
+         handler = self.request(role='admin')
+         yield handler.get()
+         self.assertEqual(self.responses[0]['server'], 'mail.headstrong.de')
+
+    @inlineCallbacks
+    def test_put(self):
+         handler = self.request(role='admin')
+         yield handler.get()
+
+         self.responses[0]['server'] = 'stuff'
+         handler = self.request(self.responses[0], role='admin')
          yield handler.put()
-         self.assertEqual(self.responses[0]['server'], 'stuff')
+         self.assertEqual(self.responses[1]['server'], 'stuff')
 
 
 class TestContextsCollection(helpers.TestHandlerWithPopulatedDB):
@@ -134,6 +143,10 @@ class TestContextsCollection(helpers.TestHandlerWithPopulatedDB):
     def test_get(self):
         handler = self.request(role='admin')
         return handler.get()
+
+
+class TestContextsCreate(helpers.TestHandlerWithPopulatedDB):
+    _handler = admin.ContextCreate
 
     @inlineCallbacks
     def test_post(self):
@@ -244,6 +257,10 @@ class TestReceiversCollection(helpers.TestHandlerWithPopulatedDB):
         yield handler.get()
 
         self.assertEqual(len(self.responses[0]), 2)
+
+
+class TestReceiverCreate(helpers.TestHandlerWithPopulatedDB):
+    _handler = admin.ReceiverCreate
 
     @inlineCallbacks
     def test_post(self):
@@ -390,7 +407,7 @@ class TestAdminStaticFileInstance(helpers.TestHandlerWithPopulatedDB):
     def test_file_download(self):
         realpath = os.path.join(GLSetting.static_path, self.fakeFile['filename'])
         dumped_file = yield admstaticfiles.dump_static_file(self.fakeFile, realpath)
-        self.assertTrue(dumped_file.has_key('filelocation'))
+        self.assertTrue('filelocation' in dumped_file)
 
         self.responses = []
 
@@ -402,7 +419,7 @@ class TestAdminStaticFileInstance(helpers.TestHandlerWithPopulatedDB):
     def test_file_delete_it(self):
         realpath = os.path.join(GLSetting.static_path, self.fakeFile['filename'])
         dumped_file = yield admstaticfiles.dump_static_file(self.fakeFile, realpath)
-        self.assertTrue(dumped_file.has_key('filelocation'))
+        self.assertTrue('filelocation' in dumped_file)
 
         self.responses = []
 
@@ -452,7 +469,7 @@ class TestAdminStaticFileList(helpers.TestHandlerWithPopulatedDB):
     def test_get_list_with_one_custom_file(self):
         realpath = os.path.join(GLSetting.static_path, self.fakeFile['filename'])
         dumped_file = yield admstaticfiles.dump_static_file(self.fakeFile, realpath)
-        self.assertTrue(dumped_file.has_key('filelocation'))
+        self.assertTrue('filelocation' in dumped_file)
 
         handler = self.request(role='admin')
         yield handler.get()

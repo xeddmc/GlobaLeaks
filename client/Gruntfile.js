@@ -143,8 +143,7 @@ module.exports = function(grunt) {
         options: {
           // Static text.
           question: 'WARNING:\n'+
-                    'this task may cause translations loss and should be executed only on master/devel branches so that only\n' +
-                    'translation sentences are kept in sync with the ones that need to be delivered in next release package.\n\n' +
+                    'this task may cause translations loss and should be executed only on master branch.\n\n' +
                     'Are you sure you want to proceed (Y/N) ?',
           continue: function(answer) {
             return answer === 'Y';
@@ -173,12 +172,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-usemin');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-karma-coveralls');
-
-  var resource = grunt.option('resource')
-
-  if (resource == undefined) {
-    resource = 'master'
-  }
 
   var path = require('path'),
     superagent = require('superagent'),
@@ -257,7 +250,7 @@ module.exports = function(grunt) {
     sourceFile = 'pot/en.po';
 
   function fetchTxSource(cb){
-    var url = baseurl + '/resource/' + resource + '/content',
+    var url = baseurl + '/resource/master/content',
       login = readTransifexrc();
 
     agent.get(url)
@@ -275,7 +268,7 @@ module.exports = function(grunt) {
   }
 
   function updateTxSource(cb){
-    var url = baseurl + '/resource/' + resource + '/content/',
+    var url = baseurl + '/resource/master/content/',
       content = grunt.file.read(sourceFile),
       login = readTransifexrc();
 
@@ -293,7 +286,7 @@ module.exports = function(grunt) {
   }
 
   function listLanguages(cb){
-    var url = baseurl + '/resource/' + resource + '/?details',
+    var url = baseurl + '/resource/master/?details',
       login = readTransifexrc();
 
     agent.get(url)
@@ -310,7 +303,7 @@ module.exports = function(grunt) {
   }
 
   function fetchTxTranslationsForLanguage(langCode, cb) {
-    var resourceUrl = baseurl + '/resource/' + resource + '/',
+    var resourceUrl = baseurl + '/resource/master/',
       login = readTransifexrc();
 
     agent.get(resourceUrl + 'stats/' + langCode + '/')
@@ -388,13 +381,6 @@ module.exports = function(grunt) {
   }
 
   grunt.registerTask('updateTranslationsSource', function() {
-
-    resource = grunt.option('resource')
-    if (resource != 'master' && resource != 'devel') {
-        grunt.fail.warn("WARNING: when updating translations you should indicate explicitly the translation resource name\n" +
-                        "Available resources are: master, devel\n" +
-                        "e.g.: grunt updateTranslations --resource devel");
-    }
 
     var done = this.async(),
       gt = new Gettext(),
