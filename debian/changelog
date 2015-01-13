@@ -1,6 +1,12 @@
+globaleaks (2.60.48-0) jessie; urgency=medium
+
+  * New upstream release
+
+ -- GlobaLeaks software signing key <info@globaleaks.org>  Tue, 13 Jan 2015 17:05:32 +0100
+
 globaleaks (2.60.47-0) jessie; urgency=medium
 
-  * New upstram release
+  * New upstream release
 
  -- GlobaLeaks software signing key <info@globaleaks.org>  Mon, 12 Jan 2015 03:43:55 +0100
 
