@@ -16,7 +16,8 @@ var GLClient = angular.module('GLClient', [
     'pascalprecht.translate',
     'GLClientFilters'
   ]).
-  config(['$routeProvider', '$translateProvider', '$tooltipProvider', function($routeProvider, $translateProvider, $tooltipProvider) {
+  config(['$routeProvider', '$translateProvider', '$tooltipProvider',
+    function($routeProvider, $translateProvider, $tooltipProvider) {
 
     $routeProvider.
       when('/wizard', {
@@ -182,7 +183,7 @@ var GLClient = angular.module('GLClient', [
         header_subtitle: ''
       }).
       otherwise({
-        redirectTo: '/'
+        redirectTo: '/submission'
       });
 
       $translateProvider.useStaticFilesLoader({
@@ -208,7 +209,6 @@ var GLClient = angular.module('GLClient', [
            ((e.which || e.keyCode) == 82 && (e.ctrlKey || e.metaKey))) {  /* (ctrl or meta) + r */ 
            e.preventDefault();
            $rootScope.$broadcast("REFRESH");
-           $route.reload();
        }
     };
 

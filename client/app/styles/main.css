@@ -6,6 +6,10 @@ body {
   background-color: #fff;
 }
 
+div, span, p, label {
+  word-wrap: break-word;
+}
+
 #PageBox {
   width: 100%;
 }
@@ -265,4 +269,37 @@ table {
 /** Fields submission/tip page **/
 .nested {
   padding-left: 15px;
+}
+
+.IntroBoxBody {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.IntroModalTitle {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+#IntroBox #LanguagePreselectorBox {
+  text-align: center;
+}
+
+#IntroBox .LanguagePreselectorBoxElem {
+  height: 200px;
+  width: 200px;
+  margin: 0;
+  border: 1px #000 solid;
+  display: inline-block;
+}
+
+#IntroBox .LanguagePreselectorBoxElemText {
+  margin: 0;
+  position: relative;
+  top: 40%;
+  text-align: center;
+}
+
+.LanguageSelected {
+  background-color: #EEE;
 }
