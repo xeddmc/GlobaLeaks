@@ -1,17 +1,9 @@
-GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$routeParams', '$location',  '$translate', 'Authentication', 'Node', 'GLCache',
-  function($scope, $rootScope, $http, $route, $routeParams, $location, $translate, Authentication, Node, GLCache) {
+GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$routeParams', '$location',  '$translate', '$modal', 'Authentication', 'Node', 'GLCache',
+  function($scope, $rootScope, $http, $route, $routeParams, $location, $translate, $modal, Authentication, Node, GLCache) {
     $scope.started = true;
 
     $scope.custom_stylesheet = '/static/custom_stylesheet.css';
     $scope.logo = '/static/globaleaks_logo.png';
-
-    $scope.update_node = function () {
-      $scope.node = Node.get(function (node) {
-        if (!$scope.node.wizard_done && $route.current.$$route.controller != "WizardCtrl") {
-          $location.path('/wizard');
-        }
-      });
-    };
 
     $scope.update = function (model, cb, errcb) {
       var success = {};
@@ -53,6 +45,35 @@ GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$ro
       return $scope.header_subtitle != '';
     }
 
+    $scope.open_intro = function () {
+      if ($scope.intro_opened) {
+        return;
+      } else {
+        $scope.intro_opened = true;
+      }
+
+      var modalInstance = $modal.open({
+        templateUrl: 'views/intro.html',
+        controller: 'IntroCtrl',
+        size: 'lg',
+        scope: $scope
+      });
+
+    };
+
+    $scope.route_check = function () {
+      if ($scope.node) {
+        if ($scope.node.wizard_done === false) {
+          $location.path('/wizard');
+        } else if($location.path() == '/' && $scope.node.landing != '/') {
+          $location.path($scope.node.landing);
+        }
+
+        /* Feature implemented for amnesty and currently disabled */
+        //$scope.open_intro();
+      }
+    }
+
     var init = function () {
 
       $scope.custom_stylesheet = '/static/custom_stylesheet.css?' + $scope.randomFluff();
@@ -65,13 +86,15 @@ GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$ro
 
       $scope.node = Node.get(function (node) {
 
+        $scope.route_check();
+
         if ($rootScope.language == undefined || $.inArray($rootScope.language, node.languages_enabled) == -1) {
           $rootScope.language = node.default_language;
+          $rootScope.default_language = node.default_language;
         }
 
-        var language_count = 0;
         $scope.languages_supported = {};
-        $scope.languages_enabled = [];
+        $scope.languages_enabled = {};
         $scope.languages_enabled_selector = [];
         $.each(node.languages_supported, function (idx) {
           var code = node.languages_supported[idx]['code'];
@@ -79,16 +102,21 @@ GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$ro
           if ($.inArray(code, node.languages_enabled) != -1) {
             $scope.languages_enabled[code] = node.languages_supported[idx]['name'];
             $scope.languages_enabled_selector.push({"name": node.languages_supported[idx]['name'], "code": code});
-            language_count += 1;
           }
         });
 
-        $scope.show_language_selector = (language_count > 1);
+        $scope.languages_enabled_length = Object.keys(node.languages_enabled).length;
+
+        $scope.show_language_selector = ($scope.languages_enabled_length > 1);
       });
 
       $translate.use($rootScope.language);
 
     };
+
+    $scope.$on( "$routeChangeStart", function(event, next, current) {
+      $scope.route_check();
+    });
 
     $scope.$on('$routeChangeSuccess', function() {
       if($location.search().lang) {
@@ -117,8 +145,7 @@ GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$ro
           $scope.build_stylesheet = "/styles-rtl.css";
         }
 
-        GLCache.removeAll();
-        init();
+        $rootScope.$broadcast("REFRESH");
 
       }
 
@@ -134,6 +161,7 @@ GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$ro
     });
 
     init();
+
   }
 
 ]);
@@ -172,3 +200,42 @@ angular.module('GLClient.fileuploader', ['blueimp.fileupload'])
     }
 ]);
 
+GLClient.controller('IntroCtrl', ['$scope', '$rootScope', '$modalInstance', function ($scope, $rootScope, $modalInstance) {
+
+  var steps = 3;
+
+  var first_step = 0;
+
+  if ($scope.languages_enabled_length <= 1) {
+     first_step = 1;
+  }
+
+  $scope.step = first_step;
+
+  $scope.proceed = function () {
+    if ($scope.step < steps) {
+      $scope.step += 1;
+    }
+  }
+
+  $scope.back = function () {
+    if ($scope.step > first_step) {
+      $scope.step -= 1;
+    }
+  }
+
+  $scope.cancel = function () {
+    $modalInstance.close();
+  }
+
+  $scope.data = {
+    'language': $scope.language
+  }
+
+  $scope.$watch("data.language", function (newVal, oldVal) {
+    if (newVal && newVal !== oldVal) {
+      $rootScope.language = $scope.data.language;
+    }
+  });
+
+}]);
