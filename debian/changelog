@@ -1,4 +1,10 @@
-globaleaks (1.60.48-0) precise; urgency=medium
+globaleaks (2.60.49-0) precise; urgency=medium
+
+  * New upstream release
+
+ -- GlobaLeaks software signing key <info@globaleaks.org>  Sun, 18 Jan 2015 16:45:39 +0100
+
+globaleaks (2.60.48-0) precise; urgency=medium
 
   * New upstream release
 
