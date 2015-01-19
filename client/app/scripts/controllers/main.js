@@ -137,15 +137,15 @@ GLClient.controller('MainCtrl', ['$scope', '$rootScope', '$http', '$route', '$ro
         if(oldVal === undefined && newVal === $scope.node.default_language)
           return;
 
-        $translate.use($rootScope.language);
-
         if (newVal != "ar" && newVal != "he") {
           $scope.build_stylesheet = "/styles.css";
         } else {
           $scope.build_stylesheet = "/styles-rtl.css";
         }
 
-        $rootScope.$broadcast("REFRESH");
+        $translate.use($rootScope.language);
+        GLCache.removeAll();
+        $route.reload();
 
       }
 
